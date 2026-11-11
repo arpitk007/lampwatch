@@ -1,0 +1,151 @@
+:root {
+  /* Primitive: raw values, used only to define the layers below */
+  --slate-900: #1b2a3a;
+  --slate-700: #2c4157;
+  --slate-500: #536274;
+  --slate-300: #a9b6c3;
+  --slate-200: #d5dde5;
+  --slate-100: #eef2f5;
+  --white: #ffffff;
+  --green-700: #1f7a55;
+  --red-700: #b42318;
+  --red-900: #7a1b13;
+  --red-200: #f1b5ad;
+  --red-50: #fdecea;
+  --blue-600: #2563eb;
+
+  /* Scales: type and spacing */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-2xl: 2rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Semantic: what a color is for */
+  --ink: var(--slate-900);
+  --on-ink: var(--white);
+  --paper: var(--slate-100);
+  --surface: var(--white);
+  --line: var(--slate-200);
+  --border-strong: var(--slate-300);
+  --muted: var(--slate-500);
+  --up: var(--green-700);
+  --down: var(--red-700);
+  --down-soft: var(--red-200);
+  --danger-bg: var(--red-50);
+  --danger-ink: var(--red-900);
+  --focus: var(--blue-600);
+
+  /* Component */
+  --button-bg: var(--surface);
+  --button-hover-bg: var(--paper);
+  --button-border: var(--border-strong);
+  --button-primary-bg: var(--ink);
+  --button-primary-hover-bg: var(--slate-700);
+  --input-border: var(--border-strong);
+  --strip-empty: var(--line);
+  --tooltip-bg: var(--ink);
+  --tooltip-ink: var(--on-ink);
+
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+h1 { font-size: var(--text-2xl); line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: var(--text-lg); line-height: 1.3; font-weight: 700; }
+
+a { color: var(--ink); }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-bottom: var(--space-2);
+  color: var(--muted);
+}
+
+input:not([type='radio']), select {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+
+  &[aria-invalid='true'] { border-color: var(--down); }
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--button-bg);
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+
+  &:hover { background: var(--button-hover-bg); }
+  &:disabled { opacity: 0.6; cursor: progress; }
+
+  &.primary { background: var(--button-primary-bg); border-color: var(--button-primary-bg); color: var(--on-ink); }
+  &.primary:hover { background: var(--button-primary-hover-bg); }
+  &.danger { color: var(--down); }
+}
+
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--down);
+  background: var(--danger-bg);
+  color: var(--danger-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

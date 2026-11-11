@@ -1,0 +1,64 @@
+<a class="back" [routerLink]="editing() ? ['/monitors', id()] : ['/']">Back</a>
+<h1>{{ editing() ? 'Edit monitor' : 'Add monitor' }}</h1>
+
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <div class="field">
+    <label for="name">Name</label>
+    <input id="name" formControlName="name" autocomplete="off" placeholder="Portfolio site"
+           [attr.aria-invalid]="fieldError('name') ? true : null" aria-describedby="name-error" />
+    @if (fieldError('name'); as e) { <p class="error" id="name-error">{{ e }}</p> }
+  </div>
+
+  <div class="field">
+    <label for="url">URL to check</label>
+    <input id="url" formControlName="url" type="url" inputmode="url" autocomplete="off"
+           [attr.aria-invalid]="fieldError('url') ? true : null" aria-describedby="url-error" />
+    @if (fieldError('url'); as e) { <p class="error" id="url-error">{{ e }}</p> }
+  </div>
+
+  <fieldset class="field">
+    <legend>Counts as up when</legend>
+    <label class="choice">
+      <input type="radio" formControlName="checkType" value="HTTP" />
+      <span>The page loads <small>Any 2xx or 3xx response</small></span>
+    </label>
+    <label class="choice">
+      <input type="radio" formControlName="checkType" value="KEYWORD" />
+      <span>The page loads and contains some text <small>Catches error pages that still return 200</small></span>
+    </label>
+  </fieldset>
+
+  @if (needsKeyword()) {
+    <div class="field">
+      <label for="keyword">Text the page must contain</label>
+      <input id="keyword" formControlName="keyword" autocomplete="off" placeholder="Sign in"
+             [attr.aria-invalid]="keywordError() ? true : null" aria-describedby="keyword-help keyword-error" />
+      <p class="help" id="keyword-help">Case-sensitive. Checked in the first 1 MB of the page.</p>
+      @if (keywordError(); as e) { <p class="error" id="keyword-error">{{ e }}</p> }
+    </div>
+  }
+
+  <div class="pair">
+    <div class="field">
+      <label for="interval">Check</label>
+      <select id="interval" formControlName="intervalSeconds">
+        @for (o of intervals; track o.seconds) { <option [ngValue]="o.seconds">{{ o.label }}</option> }
+      </select>
+    </div>
+    <div class="field">
+      <label for="timeout">Give up after</label>
+      <select id="timeout" formControlName="timeoutMs">
+        @for (t of timeouts; track t) { <option [ngValue]="t">{{ t / 1000 }} seconds</option> }
+      </select>
+    </div>
+  </div>
+
+  @if (formError(); as e) { <p class="notice" role="alert">{{ e }}</p> }
+
+  <div class="actions">
+    <button class="button primary" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : editing() ? 'Save changes' : 'Add monitor' }}
+    </button>
+    <a class="button" [routerLink]="editing() ? ['/monitors', id()] : ['/']">Cancel</a>
+  </div>
+</form>

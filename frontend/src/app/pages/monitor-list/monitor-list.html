@@ -1,0 +1,52 @@
+<header class="head">
+  <div>
+    <h1>Monitors</h1>
+    @if (monitors(); as list) {
+      @if (list.length > 0) {
+        <p class="summary">
+          <span class="up">{{ counts().up }} up</span>,
+          <span [class.down]="counts().down > 0">{{ counts().down }} down</span>
+          @if (updatedAt(); as at) {
+            <span class="updated">Updated {{ clockTime(at) }}</span>
+          }
+        </p>
+      }
+    }
+  </div>
+  <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+</header>
+
+@if (error(); as message) {
+  <p class="notice" role="alert">{{ message }} Showing the last data loaded.</p>
+}
+
+@if (monitors(); as list) {
+  @if (list.length === 0) {
+    <section class="empty">
+      <h2>No monitors yet</h2>
+      <p>Add the first site you want to watch. It gets checked within a few seconds, then on the schedule you pick.</p>
+      <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+    </section>
+  } @else {
+    <ul class="rows">
+      @for (m of list; track m.id) {
+        <li>
+          <a class="row" [routerLink]="['/monitors', m.id]" [class.is-down]="m.status === 'DOWN' && !m.paused">
+            <span class="who">
+              <span class="name">{{ m.name }}</span>
+              <span class="url">{{ m.url }}</span>
+            </span>
+            <app-status-badge class="state" [status]="m.status" [paused]="m.paused" />
+            <app-heartbeat-strip class="beats" [checks]="beatsFor(m.id)" [slots]="30" [height]="28" />
+            <span class="numbers">
+              <span class="ms">{{ latestMs(m.id) !== null ? latestMs(m.id) + ' ms' : '–' }}</span>
+              <span class="when">{{ timeAgo(m.lastCheckedAt, now()) }}, {{ intervalLabel(m.intervalSeconds) }}</span>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+} @else if (!error()) {
+  <p class="loading">Loading monitors…</p>
+}

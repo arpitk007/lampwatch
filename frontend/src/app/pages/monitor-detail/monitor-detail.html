@@ -1,0 +1,68 @@
+<a class="back" routerLink="/">All monitors</a>
+
+@if (error(); as message) {
+  <p class="notice" role="alert">{{ message }}</p>
+}
+
+@if (monitor(); as m) {
+  <header class="head">
+    <div class="title">
+      <h1>{{ m.name }}</h1>
+      <a class="url" [href]="m.url" target="_blank" rel="noopener noreferrer">{{ m.url }}</a>
+      <p class="meta">
+        <app-status-badge [status]="m.status" [paused]="m.paused" />
+        <span>Checked {{ timeAgo(m.lastCheckedAt, now()) }}, {{ intervalLabel(m.intervalSeconds) }}</span>
+        @if (m.checkType === 'KEYWORD') { <span>Looks for “{{ m.keyword }}”</span> }
+      </p>
+    </div>
+    <div class="actions">
+      <button class="button" type="button" (click)="togglePause(m)" [disabled]="busy()">
+        {{ m.paused ? 'Resume checks' : 'Pause checks' }}
+      </button>
+      <a class="button" [routerLink]="['/monitors', m.id, 'edit']">Edit</a>
+      <button class="button danger" type="button" (click)="remove(m)" [disabled]="busy()">Delete</button>
+    </div>
+  </header>
+
+  <section class="pulse" aria-labelledby="pulse-title">
+    <div class="pulse-head">
+      <h2 id="pulse-title">Last {{ checks().length || 90 }} checks</h2>
+      @if (stats(); as s) {
+        <p class="stats">
+          <span><strong>{{ s.uptime }}%</strong> passed</span>
+          @if (s.average !== null) { <span><strong>{{ s.average }} ms</strong> average response</span> }
+        </p>
+      }
+    </div>
+    <app-heartbeat-strip [checks]="oldestFirst()" [slots]="90" [height]="72" [interactive]="true" />
+    @if (updatedAt(); as at) { <p class="updated">Updated {{ clockTime(at) }}. Refreshes every 15 seconds.</p> }
+  </section>
+
+  <section aria-labelledby="history-title">
+    <h2 id="history-title">History</h2>
+    @if (checks().length === 0) {
+      <p class="muted">No checks yet. The first one runs within a few seconds of adding or resuming a monitor.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">Time</th><th scope="col">Result</th><th scope="col" class="num">HTTP</th><th scope="col" class="num">Response</th><th scope="col">Details</th></tr>
+          </thead>
+          <tbody>
+            @for (c of checks(); track c.checkedAt) {
+              <tr [class.failed]="!c.success">
+                <td>{{ timeAgo(c.checkedAt, now()) }}</td>
+                <td><span class="result">{{ c.success ? 'Passed' : 'Failed' }}</span></td>
+                <td class="num">{{ c.statusCode ?? '–' }}</td>
+                <td class="num">{{ c.responseTimeMs !== null ? c.responseTimeMs + ' ms' : '–' }}</td>
+                <td class="details">{{ c.errorMessage ?? '' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+} @else if (!error()) {
+  <p class="muted">Loading…</p>
+}
