@@ -6,8 +6,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 public interface MonitorRepository extends JpaRepository<Monitor, Long> {
+
+    List<Monitor> findByOwnerIdOrderByNameAsc(long ownerId);
+
+    Optional<Monitor> findByIdAndOwnerId(long id, long ownerId);
+
+    boolean existsByIdAndOwnerId(long id, long ownerId);
+
+    long countByOwnerId(long ownerId);
 
     @Modifying
     @Query("""

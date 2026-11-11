@@ -1,6 +1,8 @@
 package com.uptime.monitor.monitors;
 
+import com.uptime.monitor.users.AuthUser;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,38 +28,38 @@ public class MonitorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MonitorResponse create(@Valid @RequestBody MonitorRequest req) {
-        return service.create(req);
+    public MonitorResponse create(@AuthenticationPrincipal AuthUser user, @Valid @RequestBody MonitorRequest req) {
+        return service.create(user.id(), req);
     }
 
     @GetMapping
-    public List<MonitorResponse> list() {
-        return service.list();
+    public List<MonitorResponse> list(@AuthenticationPrincipal AuthUser user) {
+        return service.list(user.id());
     }
 
     @GetMapping("/{id}")
-    public MonitorResponse get(@PathVariable long id) {
-        return service.get(id);
+    public MonitorResponse get(@AuthenticationPrincipal AuthUser user, @PathVariable long id) {
+        return service.get(user.id(), id);
     }
 
     @PutMapping("/{id}")
-    public MonitorResponse update(@PathVariable long id, @Valid @RequestBody MonitorRequest req) {
-        return service.update(id, req);
+    public MonitorResponse update(@AuthenticationPrincipal AuthUser user, @PathVariable long id, @Valid @RequestBody MonitorRequest req) {
+        return service.update(user.id(), id, req);
     }
 
     @PostMapping("/{id}/pause")
-    public MonitorResponse pause(@PathVariable long id) {
-        return service.setPaused(id, true);
+    public MonitorResponse pause(@AuthenticationPrincipal AuthUser user, @PathVariable long id) {
+        return service.setPaused(user.id(), id, true);
     }
 
     @PostMapping("/{id}/resume")
-    public MonitorResponse resume(@PathVariable long id) {
-        return service.setPaused(id, false);
+    public MonitorResponse resume(@AuthenticationPrincipal AuthUser user, @PathVariable long id) {
+        return service.setPaused(user.id(), id, false);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable long id) {
-        service.delete(id);
+    public void delete(@AuthenticationPrincipal AuthUser user, @PathVariable long id) {
+        service.delete(user.id(), id);
     }
 }

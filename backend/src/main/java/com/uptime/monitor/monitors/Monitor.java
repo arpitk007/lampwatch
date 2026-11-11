@@ -30,6 +30,9 @@ public class Monitor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "owner_id", nullable = false, updatable = false)
+    private long ownerId;
+
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -78,7 +81,8 @@ public class Monitor {
     protected Monitor() {
     }
 
-    public Monitor(String name, String url, CheckType checkType, String keyword, int intervalSeconds, int timeoutMs) {
+    public Monitor(long ownerId, String name, String url, CheckType checkType, String keyword, int intervalSeconds, int timeoutMs) {
+        this.ownerId = ownerId;
         this.name = name;
         this.url = url;
         this.checkType = checkType;
@@ -118,6 +122,7 @@ public class Monitor {
     }
 
     public Long getId() { return id; }
+    public long getOwnerId() { return ownerId; }
     public String getName() { return name; }
     public String getUrl() { return url; }
     public CheckType getCheckType() { return checkType; }

@@ -1,7 +1,9 @@
 package com.uptime.monitor.scheduling;
 
 import com.uptime.monitor.TestHttpServer;
+import com.uptime.monitor.TestUsers;
 import com.uptime.monitor.TestcontainersConfiguration;
+import com.uptime.monitor.users.UserRepository;
 import com.uptime.monitor.checks.CheckResult;
 import com.uptime.monitor.checks.CheckResultRepository;
 import com.uptime.monitor.monitors.CheckType;
@@ -23,13 +25,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CheckSchedulerFlowTest {
 
     @Autowired MonitorRepository monitors;
+    @Autowired UserRepository users;
+    long owner;
     @Autowired CheckResultRepository results;
 
     @Test
     void scheduledCheckRecordsResultAndMarksUp() throws Exception {
         monitors.deleteAll();
+        owner = TestUsers.create(users);
         try (TestHttpServer server = new TestHttpServer()) {
-            long id = monitors.save(new Monitor("Local", server.url("/ok"), CheckType.HTTP, null, 60, 2000)).getId();
+            long id = monitors.save(new Monitor(owner, "Local", server.url("/ok"), CheckType.HTTP, null, 60, 2000)).getId();
 
             List<CheckResult> found = List.of();
             for (int i = 0; i < 50 && found.isEmpty(); i++) {

@@ -24,8 +24,8 @@ public class HeartbeatQuery {
         this.jdbc = jdbc;
     }
 
-    /** Results per monitor id, oldest first. Monitors with no results are absent. */
-    public Map<Long, List<CheckResultResponse>> latest(int limit) {
+    /** Results per monitor id for one owner, oldest first. Monitors with no results are absent. */
+    public Map<Long, List<CheckResultResponse>> latest(long ownerId, int limit) {
         Map<Long, List<CheckResultResponse>> byMonitor = new LinkedHashMap<>();
         jdbc.sql("""
                         SELECT m.id AS monitor_id, r.checked_at, r.success, r.status_code, r.response_time_ms, r.error_message
@@ -37,7 +37,9 @@ public class HeartbeatQuery {
                             ORDER BY c.checked_at DESC
                             LIMIT :limit
                         ) r ON TRUE
+                        WHERE m.owner_id = :owner
                         ORDER BY m.id, r.checked_at""")
+                .param("owner", ownerId)
                 .param("limit", limit)
                 .query(rs -> {
                     CheckResultResponse result = new CheckResultResponse(

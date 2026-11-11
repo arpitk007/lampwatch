@@ -1,0 +1,12 @@
+:host { display: block; max-width: 24rem; margin-top: var(--space-8); }
+
+h1 { margin: 0; }
+.lede { color: var(--muted); margin: var(--space-2) 0 0; }
+
+form { display: grid; gap: var(--space-5); margin-top: var(--space-6); }
+.field { display: grid; gap: 0.35rem; }
+label { font-weight: 600; }
+.help { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+.error { margin: 0; color: var(--down); font-size: var(--text-sm); font-weight: 500; }
+
+.switch { margin-top: var(--space-6); color: var(--muted); }

@@ -14,5 +14,7 @@ public record UptimeProperties(
         /** Failed checks in a row before a monitor is marked DOWN. */
         @DefaultValue("3") int failureThreshold,
         /** Largest response body read for keyword checks. */
-        @DefaultValue("1048576") int maxBodyBytes) {
+        @DefaultValue("1048576") int maxBodyBytes,
+        /** Cap per account, since anyone can sign up on the public site. */
+        @DefaultValue("20") int maxMonitorsPerUser) {
 }

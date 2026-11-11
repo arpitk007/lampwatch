@@ -2,6 +2,8 @@ package com.uptime.monitor.checks;
 
 import com.uptime.monitor.common.NotFoundException;
 import com.uptime.monitor.monitors.MonitorRepository;
+import com.uptime.monitor.users.AuthUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.PageRequest;
@@ -28,14 +30,15 @@ public class CheckResultController {
 
     /** Latest results for all monitors at once, keyed by monitor id, oldest first. */
     @GetMapping("/api/monitors/heartbeats")
-    public Map<Long, List<CheckResultResponse>> heartbeats(@RequestParam(defaultValue = "30") @Min(1) @Max(100) int limit) {
-        return heartbeats.latest(limit);
+    public Map<Long, List<CheckResultResponse>> heartbeats(@AuthenticationPrincipal AuthUser user,
+                                                         @RequestParam(defaultValue = "30") @Min(1) @Max(100) int limit) {
+        return heartbeats.latest(user.id(), limit);
     }
 
     @GetMapping("/api/monitors/{id}/checks")
-    public List<CheckResultResponse> recent(@PathVariable long id,
+    public List<CheckResultResponse> recent(@AuthenticationPrincipal AuthUser user, @PathVariable long id,
                                             @RequestParam(defaultValue = "50") @Min(1) @Max(500) int limit) {
-        if (!monitors.existsById(id)) {
+        if (!monitors.existsByIdAndOwnerId(id, user.id())) {
             throw new NotFoundException("Monitor " + id + " not found");
         }
         return results.findByMonitorIdOrderByCheckedAtDesc(id, PageRequest.of(0, limit)).stream()

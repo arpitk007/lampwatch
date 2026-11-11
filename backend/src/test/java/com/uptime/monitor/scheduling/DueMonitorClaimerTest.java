@@ -1,6 +1,8 @@
 package com.uptime.monitor.scheduling;
 
+import com.uptime.monitor.TestUsers;
 import com.uptime.monitor.TestcontainersConfiguration;
+import com.uptime.monitor.users.UserRepository;
 import com.uptime.monitor.checks.CheckTask;
 import com.uptime.monitor.monitors.CheckType;
 import com.uptime.monitor.monitors.Monitor;
@@ -28,14 +30,17 @@ class DueMonitorClaimerTest {
 
     @Autowired DueMonitorClaimer claimer;
     @Autowired MonitorRepository monitors;
+    @Autowired UserRepository users;
+    long owner;
 
     @BeforeEach
     void setUp() {
         monitors.deleteAll();
+        owner = TestUsers.create(users);
         for (int i = 0; i < 20; i++) {
-            monitors.save(new Monitor("Site " + i, "https://example.com/" + i, CheckType.HTTP, null, 60, 5000));
+            monitors.save(new Monitor(owner, "Site " + i, "https://example.com/" + i, CheckType.HTTP, null, 60, 5000));
         }
-        Monitor paused = new Monitor("Paused", "https://example.com/p", CheckType.HTTP, null, 60, 5000);
+        Monitor paused = new Monitor(owner, "Paused", "https://example.com/p", CheckType.HTTP, null, 60, 5000);
         paused.pause();
         monitors.save(paused);
     }

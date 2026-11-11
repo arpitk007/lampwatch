@@ -128,6 +128,8 @@ input:not([type='radio']), select {
   &.primary { background: var(--button-primary-bg); border-color: var(--button-primary-bg); color: var(--on-ink); }
   &.primary:hover { background: var(--button-primary-hover-bg); }
   &.danger { color: var(--down); }
+  &.quiet { background: transparent; border-color: transparent; color: var(--muted); }
+  &.quiet:hover { color: var(--ink); background: var(--button-hover-bg); }
 }
 
 .notice {

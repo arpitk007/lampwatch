@@ -4,6 +4,12 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-6 4 12 3-8 2 2h5" /></svg>
     Uptime
   </a>
+  @if (auth.user(); as user) {
+    <div class="account">
+      <span class="email">{{ user.email }}</span>
+      <button class="button quiet" type="button" (click)="signOut()">Sign out</button>
+    </div>
+  }
 </header>
 <main id="main">
   <router-outlet />

@@ -1,0 +1,41 @@
+<h1>{{ isSignUp() ? 'Create your account' : 'Sign in' }}</h1>
+<p class="lede">
+  @if (isSignUp()) {
+    Watch up to 20 websites and see the moment one stops responding.
+  } @else {
+    See how your websites are doing.
+  }
+</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email"
+           [attr.aria-invalid]="emailError() ? true : null" aria-describedby="email-error" />
+    @if (emailError(); as e) { <p class="error" id="email-error">{{ e }}</p> }
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" type="password" formControlName="password"
+           [attr.autocomplete]="isSignUp() ? 'new-password' : 'current-password'"
+           [attr.aria-invalid]="passwordError() ? true : null" aria-describedby="password-help password-error" />
+    @if (isSignUp()) { <p class="help" id="password-help">At least 10 characters.</p> }
+    @if (passwordError(); as e) { <p class="error" id="password-error">{{ e }}</p> }
+  </div>
+
+  @if (formError(); as e) { <p class="notice" role="alert">{{ e }}</p> }
+
+  <button class="button primary" type="submit" [disabled]="busy()">
+    @if (busy()) { {{ isSignUp() ? 'Creating account…' : 'Signing in…' }} }
+    @else { {{ isSignUp() ? 'Create account' : 'Sign in' }} }
+  </button>
+</form>
+
+<p class="switch">
+  @if (isSignUp()) {
+    Already have an account? <a routerLink="/signin" [queryParams]="{ next: next() }">Sign in</a>
+  } @else {
+    New here? <a routerLink="/signup" [queryParams]="{ next: next() }">Create an account</a>
+  }
+</p>

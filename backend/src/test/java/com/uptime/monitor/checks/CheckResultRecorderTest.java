@@ -1,6 +1,8 @@
 package com.uptime.monitor.checks;
 
+import com.uptime.monitor.TestUsers;
 import com.uptime.monitor.TestcontainersConfiguration;
+import com.uptime.monitor.users.UserRepository;
 import com.uptime.monitor.monitors.CheckType;
 import com.uptime.monitor.monitors.Monitor;
 import com.uptime.monitor.monitors.MonitorRepository;
@@ -21,6 +23,8 @@ class CheckResultRecorderTest {
 
     @Autowired CheckResultRecorder recorder;
     @Autowired MonitorRepository monitors;
+    @Autowired UserRepository users;
+    long owner;
     @Autowired CheckResultRepository results;
 
     long id;
@@ -28,7 +32,8 @@ class CheckResultRecorderTest {
     @BeforeEach
     void setUp() {
         monitors.deleteAll();
-        id = monitors.save(new Monitor("Site", "https://example.com", CheckType.HTTP, null, 60, 5000)).getId();
+        owner = TestUsers.create(users);
+        id = monitors.save(new Monitor(owner, "Site", "https://example.com", CheckType.HTTP, null, 60, 5000)).getId();
     }
 
     private CheckTask task() {
