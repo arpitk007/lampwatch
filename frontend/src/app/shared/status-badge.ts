@@ -10,6 +10,7 @@ import { MonitorStatus } from '../api/monitor-api';
         @switch (tone()) {
           @case ('up') { <circle cx="6" cy="6" r="5" /> }
           @case ('down') { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+          @case ('slow') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
           @case ('paused') { <rect x="2" y="1.5" width="2.8" height="9" /><rect x="7.2" y="1.5" width="2.8" height="9" /> }
           @default { <circle cx="6" cy="6" r="4.2" fill="none" stroke-width="1.6" /> }
         }
@@ -29,6 +30,7 @@ import { MonitorStatus } from '../api/monitor-api';
     .mark { width: 0.75em; height: 0.75em; fill: currentColor; stroke: currentColor; }
     .up { color: var(--up); }
     .down { color: var(--down); }
+    .slow { color: var(--slow); }
     .paused, .waiting { color: var(--muted); }
   `,
 })
@@ -43,12 +45,14 @@ export class StatusBadge {
         return 'up';
       case 'DOWN':
         return 'down';
+      case 'DEGRADED':
+        return 'slow';
       default:
         return 'waiting';
     }
   });
 
   protected readonly label = computed(
-    () => ({ up: 'Up', down: 'Down', paused: 'Paused', waiting: 'Waiting' })[this.tone()],
+    () => ({ up: 'Up', slow: 'Slow', down: 'Down', paused: 'Paused', waiting: 'Waiting' })[this.tone()],
   );
 }

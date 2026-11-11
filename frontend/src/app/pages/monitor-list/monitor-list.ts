@@ -5,7 +5,7 @@ import { CheckResult, Monitor, MonitorApi, problemOf } from '../../api/monitor-a
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
-import { clockTime, intervalLabel, timeAgo } from '../../shared/time';
+import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
 
 @Component({
   selector: 'app-monitor-list',
@@ -26,6 +26,7 @@ export class MonitorList {
     const active = list.filter((m) => !m.paused);
     return {
       up: active.filter((m) => m.status === 'UP').length,
+      slow: active.filter((m) => m.status === 'DEGRADED').length,
       down: active.filter((m) => m.status === 'DOWN').length,
     };
   });
@@ -33,6 +34,11 @@ export class MonitorList {
   protected readonly timeAgo = timeAgo;
   protected readonly intervalLabel = intervalLabel;
   protected readonly clockTime = clockTime;
+  protected readonly durationLabel = durationLabel;
+
+  protected downFor(since: string): string {
+    return durationLabel(this.now() - Date.parse(since));
+  }
 
   constructor() {
     poll(() => this.load(), 15_000);

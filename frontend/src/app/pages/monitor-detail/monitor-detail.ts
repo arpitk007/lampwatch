@@ -1,11 +1,11 @@
 import { Component, computed, DestroyRef, inject, input, numberAttribute, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
-import { CheckResult, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
+import { CheckResult, Incident, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
-import { clockTime, intervalLabel, timeAgo } from '../../shared/time';
+import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
 
 @Component({
   selector: 'app-monitor-detail',
@@ -23,6 +23,7 @@ export class MonitorDetail implements OnInit {
   protected readonly monitor = signal<Monitor | null>(null);
   /** Newest first, as the API returns them. */
   protected readonly checks = signal<CheckResult[]>([]);
+  protected readonly incidents = signal<Incident[]>([]);
   protected readonly error = signal<string | null>(null);
   protected readonly busy = signal(false);
   protected readonly updatedAt = signal<Date | null>(null);
@@ -43,6 +44,14 @@ export class MonitorDetail implements OnInit {
   protected readonly timeAgo = timeAgo;
   protected readonly intervalLabel = intervalLabel;
   protected readonly clockTime = clockTime;
+
+  protected lasted(i: Incident): string {
+    return durationLabel((i.resolvedAt ? Date.parse(i.resolvedAt) : this.now()) - Date.parse(i.startedAt));
+  }
+
+  protected startedLabel(i: Incident): string {
+    return new Date(i.startedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
 
   ngOnInit(): void {
     // Not in the constructor: the route id input is only set by now.
@@ -77,10 +86,15 @@ export class MonitorDetail implements OnInit {
   }
 
   private load(): void {
-    forkJoin({ monitor: this.api.get(this.id()), checks: this.api.checks(this.id(), 90) }).subscribe({
-      next: ({ monitor, checks }) => {
+    forkJoin({
+      monitor: this.api.get(this.id()),
+      checks: this.api.checks(this.id(), 90),
+      incidents: this.api.incidents(this.id(), 10),
+    }).subscribe({
+      next: ({ monitor, checks, incidents }) => {
         this.monitor.set(monitor);
         this.checks.set(checks);
+        this.incidents.set(incidents);
         this.error.set(null);
         this.updatedAt.set(new Date());
       },

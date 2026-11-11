@@ -89,6 +89,8 @@ class MonitorControllerTest {
         mvc.perform(get("/api/monitors").cookie(bob)).andExpect(jsonPath("$", hasSize(0)));
         mvc.perform(get("/api/monitors/{id}", id).cookie(bob)).andExpect(status().isNotFound());
         mvc.perform(get("/api/monitors/{id}/checks", id).cookie(bob)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/monitors/{id}/incidents", id).cookie(bob)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/monitors/{id}/incidents", id).cookie(alice)).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
         mvc.perform(put("/api/monitors/{id}", id).cookie(bob).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(HTTP_MONITOR)).andExpect(status().isNotFound());
         mvc.perform(delete("/api/monitors/{id}", id).cookie(bob).with(csrf())).andExpect(status().isNotFound());

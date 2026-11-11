@@ -17,6 +17,10 @@ public record UptimeProperties(
         @DefaultValue("300000") long staleAfterMs,
         /** Failed checks in a row before a monitor is marked DOWN. */
         @DefaultValue("3") int failureThreshold,
+        /** Passing checks in a row before a DOWN monitor recovers. */
+        @DefaultValue("2") int recoveryThreshold,
+        /** A passing check slower than this marks the monitor DEGRADED. */
+        @DefaultValue("3000") int degradedAfterMs,
         /** Largest response body read for keyword checks. */
         @DefaultValue("1048576") int maxBodyBytes,
         /** Cap per account, since anyone can sign up on the public site. */

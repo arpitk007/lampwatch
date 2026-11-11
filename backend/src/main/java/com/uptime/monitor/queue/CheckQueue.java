@@ -44,10 +44,20 @@ public class CheckQueue {
             redis.execute((RedisCallback<String>) connection -> connection.streamCommands()
                     .xGroupCreate(STREAM.getBytes(StandardCharsets.UTF_8), GROUP, ReadOffset.from("0"), true));
         } catch (RedisSystemException e) {
-            if (e.getMessage() == null || !e.getMessage().contains("BUSYGROUP")) {
+            if (!groupAlreadyExists(e)) {
                 throw e; // anything but "group already exists" is a real problem
             }
         }
+    }
+
+    /** Redis answers BUSYGROUP on every restart after the first; the code sits in a nested cause. */
+    private static boolean groupAlreadyExists(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t.getMessage() != null && t.getMessage().contains("BUSYGROUP")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void enqueue(List<CheckTask> tasks) {

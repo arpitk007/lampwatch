@@ -98,6 +98,13 @@ class CheckQueueTest {
     }
 
     @Test
+    void creatingTheGroupAgainOnRestartIsHarmless() {
+        queue.createGroup(); // the group already exists from setUp, as after any app restart
+        queue.createGroup();
+        assertThat(redis.opsForStream().groups(CheckQueue.STREAM)).hasSize(1);
+    }
+
+    @Test
     void redeliveredMessageIsRecordedOnce() {
         queue.enqueue(List.of(task()));
         MapRecord<String, String, String> message = readAndCrash();

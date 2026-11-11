@@ -50,6 +50,7 @@ All `/api/monitors` endpoints need a signed-in session.
 | POST | `/api/monitors/{id}/resume` | Resume checks now |
 | DELETE | `/api/monitors/{id}` | Delete a monitor and its results |
 | GET | `/api/monitors/{id}/checks?limit=50` | Latest check results, newest first |
+| GET | `/api/monitors/{id}/incidents?limit=20` | Incidents, newest first |
 | GET | `/api/monitors/heartbeats?limit=30` | Latest results for every monitor in one query (LATERAL join), oldest first |
 
 ## How checks run
@@ -73,6 +74,25 @@ All `/api/monitors` endpoints need a signed-in session.
 7. Messages older than 5 minutes are dropped rather than checked late; the next scheduler tick sends a fresh one.
 
 `uptime.scheduler-enabled` and `uptime.worker-enabled` let an instance run only the scheduler or only workers, so the two can be scaled separately.
+
+## Status and incidents
+
+Each monitor's status is a small state machine (state pattern, `incidents/MonitorState.java`):
+
+| From | Check result | To | Effect |
+|---|---|---|---|
+| Unknown, Up, Slow | Pass under 3 s | Up | |
+| Unknown, Up, Slow | Pass over 3 s | Slow (`DEGRADED`) | |
+| Unknown, Up, Slow | 1st or 2nd failure in a row | unchanged | treated as a blip |
+| Unknown, Up, Slow | 3rd failure in a row | Down | incident opens |
+| Down | 1st pass | Down | |
+| Down | 2nd pass in a row | Up or Slow | incident resolves |
+
+- Requiring several results in a row in both directions stops a flaky site from flapping between up and down.
+- Results for one monitor are applied under a row lock (`SELECT … FOR UPDATE`), so two workers can't apply them out of order.
+- Status fields are excluded from optimistic locking, so a check landing while you edit a monitor doesn't fail your save, and your save doesn't undo the check.
+- MySQL allows only one open incident per monitor: a generated column is `1` while open and `NULL` once resolved, under a unique key with `monitor_id`.
+- Opening or resolving an incident publishes an event after the transaction commits; alerts subscribe to these.
 
 ## Tests
 

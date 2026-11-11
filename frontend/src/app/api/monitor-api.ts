@@ -18,6 +18,8 @@ export interface Monitor {
   lastCheckedAt: string | null;
   nextCheckAt: string;
   createdAt: string;
+  /** Start of the open incident, if the monitor is down. */
+  downSince: string | null;
 }
 
 export interface MonitorInput {
@@ -35,6 +37,13 @@ export interface CheckResult {
   statusCode: number | null;
   responseTimeMs: number | null;
   errorMessage: string | null;
+}
+
+export interface Incident {
+  id: number;
+  startedAt: string;
+  resolvedAt: string | null;
+  cause: string | null;
 }
 
 /** Shape of the backend's RFC 9457 problem responses. */
@@ -79,6 +88,11 @@ export class MonitorApi {
   /** Newest first. */
   checks(id: number, limit = 50): Observable<CheckResult[]> {
     return this.http.get<CheckResult[]>(`${this.base}/${id}/checks`, { params: { limit } });
+  }
+
+  /** Newest first. */
+  incidents(id: number, limit = 20): Observable<Incident[]> {
+    return this.http.get<Incident[]>(`${this.base}/${id}/incidents`, { params: { limit } });
   }
 
   /** Latest results for every monitor, keyed by monitor id, oldest first. */

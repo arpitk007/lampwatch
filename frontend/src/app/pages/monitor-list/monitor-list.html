@@ -5,6 +5,7 @@
       @if (list.length > 0) {
         <p class="summary">
           <span class="up">{{ counts().up }} up</span>,
+          @if (counts().slow > 0) { <span class="slow">{{ counts().slow }} slow</span>, }
           <span [class.down]="counts().down > 0">{{ counts().down }} down</span>
           @if (updatedAt(); as at) {
             <span class="updated">Updated {{ clockTime(at) }}</span>
@@ -36,7 +37,10 @@
               <span class="name">{{ m.name }}</span>
               <span class="url">{{ m.url }}</span>
             </span>
-            <app-status-badge class="state" [status]="m.status" [paused]="m.paused" />
+            <span class="state">
+              <app-status-badge [status]="m.status" [paused]="m.paused" />
+              @if (m.downSince && !m.paused) { <span class="since">for {{ downFor(m.downSince) }}</span> }
+            </span>
             <app-heartbeat-strip class="beats" [checks]="beatsFor(m.id)" [slots]="30" [height]="28" />
             <span class="numbers">
               <span class="ms">{{ latestMs(m.id) !== null ? latestMs(m.id) + ' ms' : '–' }}</span>

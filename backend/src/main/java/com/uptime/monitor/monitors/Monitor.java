@@ -8,18 +8,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
 /**
  * Dynamic updates write only changed columns, so a user edit never overwrites
- * the status and failure count that checks update in parallel.
+ * the status and counters that checks update in parallel. Those fields are also
+ * excluded from optimistic locking, so a check landing mid-edit doesn't fail the edit.
  */
 @Entity
 @DynamicUpdate
@@ -55,10 +56,16 @@ public class Monitor {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 20)
+    @OptimisticLock(excluded = true)
     private MonitorStatus status = MonitorStatus.UNKNOWN;
 
     @Column(name = "consecutive_failures", nullable = false)
+    @OptimisticLock(excluded = true)
     private int consecutiveFailures;
+
+    @Column(name = "consecutive_successes", nullable = false)
+    @OptimisticLock(excluded = true)
+    private int consecutiveSuccesses;
 
     @Column(nullable = false)
     private boolean paused;
@@ -67,6 +74,7 @@ public class Monitor {
     private Instant nextCheckAt;
 
     @Column(name = "last_checked_at")
+    @OptimisticLock(excluded = true)
     private Instant lastCheckedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -97,18 +105,31 @@ public class Monitor {
         createdAt = updatedAt = Instant.now();
     }
 
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = Instant.now();
-    }
-
+    /** updated_at means "settings last edited", so it is set here and not on status writes from checks. */
     public void update(String name, String url, CheckType checkType, String keyword, int intervalSeconds, int timeoutMs) {
+        this.updatedAt = Instant.now();
         this.name = name;
         this.url = url;
         this.checkType = checkType;
         this.keyword = keyword;
         this.intervalSeconds = intervalSeconds;
         this.timeoutMs = timeoutMs;
+    }
+
+    /** Counts this check in the run of passes or failures. Returns the new run lengths. */
+    public void countCheck(boolean success, Instant at) {
+        if (success) {
+            consecutiveSuccesses++;
+            consecutiveFailures = 0;
+        } else {
+            consecutiveFailures++;
+            consecutiveSuccesses = 0;
+        }
+        lastCheckedAt = at;
+    }
+
+    public void setStatus(MonitorStatus status) {
+        this.status = status;
     }
 
     public void pause() {
@@ -131,6 +152,7 @@ public class Monitor {
     public int getTimeoutMs() { return timeoutMs; }
     public MonitorStatus getStatus() { return status; }
     public int getConsecutiveFailures() { return consecutiveFailures; }
+    public int getConsecutiveSuccesses() { return consecutiveSuccesses; }
     public boolean isPaused() { return paused; }
     public Instant getNextCheckAt() { return nextCheckAt; }
     public Instant getLastCheckedAt() { return lastCheckedAt; }

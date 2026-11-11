@@ -3,19 +3,26 @@ package com.uptime.monitor.monitors;
 import com.uptime.monitor.common.BadRequestException;
 import com.uptime.monitor.common.NotFoundException;
 import com.uptime.monitor.config.UptimeProperties;
+import com.uptime.monitor.incidents.Incident;
+import com.uptime.monitor.incidents.IncidentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MonitorService {
 
     private final MonitorRepository monitors;
+    private final IncidentRepository incidents;
     private final int maxPerUser;
 
-    public MonitorService(MonitorRepository monitors, UptimeProperties props) {
+    public MonitorService(MonitorRepository monitors, IncidentRepository incidents, UptimeProperties props) {
         this.monitors = monitors;
+        this.incidents = incidents;
         this.maxPerUser = props.maxMonitorsPerUser();
     }
 
@@ -32,12 +39,19 @@ public class MonitorService {
 
     @Transactional(readOnly = true)
     public List<MonitorResponse> list(long ownerId) {
-        return monitors.findByOwnerIdOrderByNameAsc(ownerId).stream().map(MonitorResponse::from).toList();
+        // Two queries for the whole list, not one per monitor.
+        Map<Long, Instant> downSince = incidents.findOpenForOwner(ownerId).stream()
+                .collect(Collectors.toMap(Incident::getMonitorId, Incident::getStartedAt));
+        return monitors.findByOwnerIdOrderByNameAsc(ownerId).stream()
+                .map(m -> MonitorResponse.from(m, downSince.get(m.getId())))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public MonitorResponse get(long ownerId, long id) {
-        return MonitorResponse.from(find(ownerId, id));
+        Monitor monitor = find(ownerId, id);
+        Instant downSince = incidents.findFirstByMonitorIdAndResolvedAtIsNull(id).map(Incident::getStartedAt).orElse(null);
+        return MonitorResponse.from(monitor, downSince);
     }
 
     @Transactional

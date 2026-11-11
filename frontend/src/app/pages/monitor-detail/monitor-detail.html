@@ -38,6 +38,23 @@
     @if (updatedAt(); as at) { <p class="updated">Updated {{ clockTime(at) }}. Refreshes every 15 seconds.</p> }
   </section>
 
+  <section class="incidents" aria-labelledby="incidents-title">
+    <h2 id="incidents-title">Incidents</h2>
+    @if (incidents().length === 0) {
+      <p class="muted">No outages recorded. An incident opens after 3 failed checks in a row and closes after 2 passes in a row.</p>
+    } @else {
+      <ul class="incident-list">
+        @for (i of incidents(); track i.id) {
+          <li [class.open]="!i.resolvedAt">
+            <span class="when">{{ startedLabel(i) }}</span>
+            <span class="length">{{ i.resolvedAt ? 'Lasted ' + lasted(i) : 'Ongoing for ' + lasted(i) }}</span>
+            <span class="cause">{{ i.cause ?? 'No error message' }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
   <section aria-labelledby="history-title">
     <h2 id="history-title">History</h2>
     @if (checks().length === 0) {
