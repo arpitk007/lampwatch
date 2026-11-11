@@ -35,6 +35,9 @@ public class CheckResult {
     @Column(name = "error_message", length = 500)
     private String errorMessage;
 
+    @Column(name = "job_id", length = 40)
+    private String jobId;
+
     protected CheckResult() {
     }
 

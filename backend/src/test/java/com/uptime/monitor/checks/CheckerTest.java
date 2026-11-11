@@ -21,7 +21,7 @@ class CheckerTest {
     @BeforeAll
     static void start() throws IOException {
         server = new TestHttpServer();
-        HttpProbe probe = new HttpProbe(new UptimeProperties(50, 8, 500, 3, 1_048_576, 20));
+        HttpProbe probe = new HttpProbe(new UptimeProperties(50, 8, 60_000, 3, 300_000, 3, 1_048_576, 20));
         http = new HttpChecker(probe);
         keyword = new KeywordChecker(probe);
     }

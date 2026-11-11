@@ -54,17 +54,25 @@ All `/api/monitors` endpoints need a signed-in session.
 
 ## How checks run
 
-1. Every 5 seconds the scheduler claims due monitors with `SELECT … FOR UPDATE SKIP LOCKED`, so several app instances never check the same monitor twice.
-2. In the same transaction it moves each claimed monitor's `next_check_at` forward by its interval. That acts as a lease.
-3. A bounded thread pool runs each check through the `Checker` for its type (`HttpChecker`, `KeywordChecker`).
-4. The result is saved, and the monitor's status is updated with one atomic `UPDATE`. A monitor turns `DOWN` after 3 failures in a row and `UP` after one success.
-
-Example:
-
-```bash
-curl -X POST localhost:8090/api/monitors -H 'Content-Type: application/json' \
-  -d '{"name":"Google","url":"https://www.google.com","checkType":"HTTP","intervalSeconds":60,"timeoutMs":5000}'
 ```
+ scheduler ──claim due rows──▶ MySQL (FOR UPDATE SKIP LOCKED, lease next_check_at)
+     │
+     └──XADD──▶ Redis Stream "checks" ──consumer group "checkers"──▶ workers (N per instance)
+                       │                                               │
+                       │  unacked > 60 s                               ├─ HttpChecker / KeywordChecker
+                       └──▶ reclaimer ──after 3 deliveries──▶ "checks:dead"
+                                                                       └─ INSERT IGNORE result (job_id unique) + atomic status UPDATE, then XACK
+```
+
+1. Every 5 seconds the scheduler claims due monitors with `SELECT … FOR UPDATE SKIP LOCKED` and moves each one's `next_check_at` forward in the same transaction (a lease), so several instances never claim the same monitor.
+2. It puts one message per monitor on the `checks` Redis Stream. It never runs checks itself, so a slow website can't delay scheduling.
+3. Workers in the `checkers` consumer group read one message at a time. Redis gives each message to exactly one worker, and it stays pending until the worker acknowledges it.
+4. The worker runs the `Checker` for the monitor's type, stores the result and updates the status in one transaction, then acknowledges. A monitor turns `DOWN` after 3 failures in a row and `UP` after one success.
+5. Delivery is at-least-once. Each result stores the stream message id in a unique `job_id` column and is written with `INSERT IGNORE`, so a redelivered message is recorded once.
+6. If a worker dies mid-check, its message stays pending. The reclaimer claims messages idle for over 60 seconds and runs them again. After 3 deliveries a message goes to the `checks:dead` stream with the reason, so one bad message can't loop forever.
+7. Messages older than 5 minutes are dropped rather than checked late; the next scheduler tick sends a fresh one.
+
+`uptime.scheduler-enabled` and `uptime.worker-enabled` let an instance run only the scheduler or only workers, so the two can be scaled separately.
 
 ## Tests
 

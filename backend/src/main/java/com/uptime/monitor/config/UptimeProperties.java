@@ -7,10 +7,14 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record UptimeProperties(
         /** How many due monitors one scheduler tick claims. */
         @DefaultValue("50") int batchSize,
-        /** Threads that run checks in parallel. */
+        /** Stream consumers per instance; each runs one check at a time. */
         @DefaultValue("8") int workerThreads,
-        /** Checks waiting for a free thread before new ones are rejected. */
-        @DefaultValue("500") int queueCapacity,
+        /** Pending checks idle this long are assumed lost (worker crashed) and reclaimed. */
+        @DefaultValue("60000") long reclaimIdleMs,
+        /** Deliveries before a check is moved to the dead-letter stream. */
+        @DefaultValue("3") int maxDeliveries,
+        /** Queued checks older than this are dropped; the scheduler enqueues a fresh one. */
+        @DefaultValue("300000") long staleAfterMs,
         /** Failed checks in a row before a monitor is marked DOWN. */
         @DefaultValue("3") int failureThreshold,
         /** Largest response body read for keyword checks. */
