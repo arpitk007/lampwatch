@@ -50,6 +50,7 @@ All `/api/monitors` endpoints need a signed-in session.
 | POST | `/api/monitors/{id}/resume` | Resume checks now |
 | DELETE | `/api/monitors/{id}` | Delete a monitor and its results |
 | GET | `/api/monitors/{id}/checks?limit=50` | Latest check results, newest first |
+| GET | `/api/monitors/{id}/response-times?hours=24` | Hourly average response time (up to 720 hours) |
 | GET | `/api/monitors/{id}/incidents?limit=20` | Incidents, newest first |
 | GET | `/api/channels` | Alert channels with their last delivery |
 | POST | `/api/channels` | Add an email or Telegram channel |
@@ -125,6 +126,20 @@ Each account can publish one public page at `/s/<address>` with chosen monitors:
 - **Privacy.** Public pages show service names and status only, never URLs or error messages, which can reveal internal hosts.
 - **Honest numbers.** Any recorded failure caps displayed uptime at 99.99%, so real downtime never rounds up to 100%.
 - **Accessible bars.** Each day's band is shown by color and by stripes for major downtime, with a legend, hover and keyboard readouts, and a day-by-day table. The bar colors passed the dataviz palette validator for colorblind separation.
+
+## SSRF protection
+
+Anyone can sign up and enter a URL, and the checker fetches it from inside the server's network. Without a guard, a monitor could reach localhost, MySQL or Redis, other internal services, or the cloud metadata endpoint (`169.254.169.254`) that hands out credentials.
+
+- Only `http` and `https` URLs, and no `user:password@` in the URL.
+- The hostname is resolved, and every address is rejected if it is loopback, private (10/8, 172.16/12, 192.168/16), link-local, carrier-grade NAT (100.64/10), unique-local IPv6 (fc00::/7), multicast or reserved, including IPv4 hidden inside IPv6 (`::ffff:10.0.0.1`).
+- This runs when a monitor is saved and again before every check, because a domain can be re-pointed later.
+- Redirects are followed by hand, at most 5, and each hop is checked, so a public URL can't bounce the checker into the private network.
+- The remaining gap, DNS that changes between the check and the connection (DNS rebinding), is closed at the network layer: the production server's firewall blocks outgoing traffic from the app to private ranges.
+
+## Response time chart
+
+The monitor page charts the hourly average response time of successful checks for the last 24 hours or 7 days, read from the hourly rollups. Hours without checks break the line instead of being bridged, hours with failures get a red tick plus text in the tooltip, and the crosshair works with the mouse or the arrow keys. An hourly table gives the same numbers without the chart.
 
 ## Tests
 

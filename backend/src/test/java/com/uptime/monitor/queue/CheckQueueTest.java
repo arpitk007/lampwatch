@@ -39,7 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "uptime.scheduler-enabled=false",
         "uptime.worker-enabled=false",
         "uptime.reclaim-idle-ms=100",
-        "uptime.max-deliveries=2"})
+        "uptime.max-deliveries=2",
+        "uptime.allow-private-targets=true"})
 @Import(TestcontainersConfiguration.class)
 class CheckQueueTest {
 

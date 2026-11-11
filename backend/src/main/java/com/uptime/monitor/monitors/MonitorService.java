@@ -1,5 +1,6 @@
 package com.uptime.monitor.monitors;
 
+import com.uptime.monitor.checks.UrlGuard;
 import com.uptime.monitor.common.BadRequestException;
 import com.uptime.monitor.common.NotFoundException;
 import com.uptime.monitor.config.UptimeProperties;
@@ -8,6 +9,7 @@ import com.uptime.monitor.incidents.IncidentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +20,13 @@ public class MonitorService {
 
     private final MonitorRepository monitors;
     private final IncidentRepository incidents;
+    private final UrlGuard guard;
     private final int maxPerUser;
 
-    public MonitorService(MonitorRepository monitors, IncidentRepository incidents, UptimeProperties props) {
+    public MonitorService(MonitorRepository monitors, IncidentRepository incidents, UrlGuard guard, UptimeProperties props) {
         this.monitors = monitors;
         this.incidents = incidents;
+        this.guard = guard;
         this.maxPerUser = props.maxMonitorsPerUser();
     }
 
@@ -84,7 +88,14 @@ public class MonitorService {
         return monitors.findByIdAndOwnerId(id, ownerId).orElseThrow(() -> new NotFoundException("Monitor " + id + " not found"));
     }
 
-    private static void validate(MonitorRequest req) {
+    private void validate(MonitorRequest req) {
+        try {
+            guard.check(URI.create(req.url().trim()));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("That URL isn't valid.");
+        } catch (UrlGuard.BlockedUrlException e) {
+            throw new BadRequestException(e.getMessage() + ".");
+        }
         if (req.checkType() == CheckType.KEYWORD && (req.keyword() == null || req.keyword().isBlank())) {
             throw new BadRequestException("keyword is required for KEYWORD checks");
         }

@@ -88,6 +88,49 @@ td {
 
 .incidents { margin-bottom: var(--space-10); }
 
+.chart {
+  margin-bottom: var(--space-10);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+
+  details { margin-top: var(--space-2); font-size: var(--text-sm); }
+  summary { cursor: pointer; color: var(--muted); min-height: 44px; display: flex; align-items: center; }
+}
+
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12); /* room for the chart tooltip above the plot */
+  h2 { margin: 0; }
+}
+
+.range {
+  display: inline-flex;
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  overflow: hidden;
+
+  button {
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--surface);
+    border: 0;
+    cursor: pointer;
+  }
+  button + button { border-left: 1px solid var(--button-border); }
+  button[aria-pressed='true'] { background: var(--ink); color: var(--on-ink); }
+}
+
+.chart-note { margin: var(--space-2) 0 0; color: var(--muted); font-size: var(--text-xs); }
+
 .incident-list {
   list-style: none;
   margin: 0;

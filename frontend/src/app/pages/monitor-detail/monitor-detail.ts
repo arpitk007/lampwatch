@@ -1,15 +1,16 @@
 import { Component, computed, DestroyRef, inject, input, numberAttribute, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
-import { CheckResult, Incident, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
+import { CheckResult, HourPoint, Incident, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
+import { ResponseChart } from '../../shared/response-chart';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
 import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
 
 @Component({
   selector: 'app-monitor-detail',
-  imports: [RouterLink, HeartbeatStrip, StatusBadge],
+  imports: [RouterLink, HeartbeatStrip, StatusBadge, ResponseChart],
   templateUrl: './monitor-detail.html',
   styleUrl: './monitor-detail.scss',
 })
@@ -24,6 +25,8 @@ export class MonitorDetail implements OnInit {
   /** Newest first, as the API returns them. */
   protected readonly checks = signal<CheckResult[]>([]);
   protected readonly incidents = signal<Incident[]>([]);
+  protected readonly range = signal<24 | 168>(24);
+  protected readonly hourly = signal<HourPoint[]>([]);
   protected readonly error = signal<string | null>(null);
   protected readonly busy = signal(false);
   protected readonly updatedAt = signal<Date | null>(null);
@@ -62,6 +65,19 @@ export class MonitorDetail implements OnInit {
     return this.updatedAt()?.getTime() ?? Date.now();
   }
 
+  protected setRange(hours: 24 | 168): void {
+    this.range.set(hours);
+    this.loadHourly();
+  }
+
+  protected hourLabel(p: HourPoint): string {
+    return new Date(p.hour).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  private loadHourly(): void {
+    this.api.responseTimes(this.id(), this.range()).subscribe({ next: (points) => this.hourly.set(points) });
+  }
+
   protected togglePause(m: Monitor): void {
     this.act(m.paused ? this.api.resume(m.id) : this.api.pause(m.id), (updated) => this.monitor.set(updated));
   }
@@ -95,6 +111,7 @@ export class MonitorDetail implements OnInit {
         this.monitor.set(monitor);
         this.checks.set(checks);
         this.incidents.set(incidents);
+        this.loadHourly();
         this.error.set(null);
         this.updatedAt.set(new Date());
       },

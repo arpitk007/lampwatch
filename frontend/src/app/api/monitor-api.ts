@@ -39,6 +39,13 @@ export interface CheckResult {
   errorMessage: string | null;
 }
 
+export interface HourPoint {
+  hour: string;
+  avgMs: number | null;
+  checks: number;
+  failures: number;
+}
+
 export interface Incident {
   id: number;
   startedAt: string;
@@ -88,6 +95,11 @@ export class MonitorApi {
   /** Newest first. */
   checks(id: number, limit = 50): Observable<CheckResult[]> {
     return this.http.get<CheckResult[]>(`${this.base}/${id}/checks`, { params: { limit } });
+  }
+
+  /** Hourly averages from the rollups, oldest first; hours without checks are absent. */
+  responseTimes(id: number, hours: number): Observable<HourPoint[]> {
+    return this.http.get<HourPoint[]>(`${this.base}/${id}/response-times`, { params: { hours } });
   }
 
   /** Newest first. */

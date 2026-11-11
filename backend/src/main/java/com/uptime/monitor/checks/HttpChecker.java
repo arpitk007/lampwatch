@@ -32,6 +32,8 @@ public class HttpChecker implements Checker {
                 return CheckOutcome.down(response.statusCode(), response.responseTimeMs(), "HTTP " + response.statusCode());
             }
             return evaluate(task, response);
+        } catch (UrlGuard.BlockedUrlException e) {
+            return CheckOutcome.down(null, null, "Blocked: " + e.getMessage());
         } catch (TimeoutException e) {
             return CheckOutcome.down(null, task.timeoutMs(), "Timed out after " + task.timeoutMs() + " ms");
         } catch (InterruptedException e) {

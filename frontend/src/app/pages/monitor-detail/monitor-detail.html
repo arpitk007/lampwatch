@@ -38,6 +38,33 @@
     @if (updatedAt(); as at) { <p class="updated">Updated {{ clockTime(at) }}. Refreshes every 15 seconds.</p> }
   </section>
 
+  <section class="chart" aria-labelledby="chart-title">
+    <div class="chart-head">
+      <h2 id="chart-title">Response time</h2>
+      <div class="range" role="group" aria-label="Time range">
+        <button type="button" [attr.aria-pressed]="range() === 24" (click)="setRange(24)">24 hours</button>
+        <button type="button" [attr.aria-pressed]="range() === 168" (click)="setRange(168)">7 days</button>
+      </div>
+    </div>
+    <app-response-chart [points]="hourly()" [hours]="range()" />
+    <p class="chart-note">Hourly average of successful checks. Red ticks mark hours with failed checks.</p>
+    <details>
+      <summary>Hourly table</summary>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Hour</th><th scope="col" class="num">Average</th><th scope="col" class="num">Checks</th><th scope="col" class="num">Failed</th></tr></thead>
+          <tbody>
+            @for (p of hourly(); track p.hour) {
+              <tr><td>{{ hourLabel(p) }}</td><td class="num">{{ p.avgMs === null ? '–' : p.avgMs + ' ms' }}</td><td class="num">{{ p.checks }}</td><td class="num">{{ p.failures }}</td></tr>
+            } @empty {
+              <tr><td colspan="4">No checks in this range yet.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
   <section class="incidents" aria-labelledby="incidents-title">
     <h2 id="incidents-title">Incidents</h2>
     @if (incidents().length === 0) {

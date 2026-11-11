@@ -8,6 +8,7 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +21,7 @@ class CheckerTest {
     @BeforeAll
     static void start() throws IOException {
         server = new TestHttpServer();
-        HttpProbe probe = new HttpProbe(1_048_576);
+        HttpProbe probe = new HttpProbe(1_048_576, new UrlGuard(true)); // the test server is on 127.0.0.1
         http = new HttpChecker(probe);
         keyword = new KeywordChecker(probe);
     }
@@ -32,6 +33,28 @@ class CheckerTest {
 
     private static CheckTask task(String path, CheckType type, String kw, int timeoutMs) {
         return new CheckTask(1, server.url(path), type, kw, timeoutMs);
+    }
+
+    @Test
+    void redirectIntoPrivateNetworkIsBlocked() {
+        // Allows only the test server's own address, like production allows only public ones.
+        UrlGuard guard = new UrlGuard(false) {
+            @Override
+            public void check(URI uri) throws BlockedUrlException {
+                if (!"127.0.0.1".equals(uri.getHost())) super.check(uri);
+            }
+        };
+        HttpChecker strict = new HttpChecker(new HttpProbe(1_048_576, guard));
+        CheckOutcome outcome = strict.check(task("/to-metadata", CheckType.HTTP, null, 2000));
+        assertThat(outcome.success()).isFalse();
+        assertThat(outcome.errorMessage()).startsWith("Blocked:").contains("169.254.169.254");
+    }
+
+    @Test
+    void redirectLoopStops() {
+        CheckOutcome outcome = http.check(task("/loop", CheckType.HTTP, null, 2000));
+        assertThat(outcome.success()).isFalse();
+        assertThat(outcome.errorMessage()).contains("Too many redirects");
     }
 
     @Test

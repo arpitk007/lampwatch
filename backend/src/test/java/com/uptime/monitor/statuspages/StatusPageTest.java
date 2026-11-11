@@ -113,6 +113,20 @@ class StatusPageTest {
     }
 
     @Test
+    void responseTimesAverageSuccessfulChecksPerHour() throws Exception {
+        check(shop, CheckOutcome.up(200, 100));
+        check(shop, CheckOutcome.up(200, 120));
+        check(shop, CheckOutcome.down(503, 9000, "HTTP 503")); // failures don't skew the average
+        mvc.perform(get("/api/monitors/{id}/response-times", shop).param("hours", "24").cookie(owner))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].avgMs").value(110))
+                .andExpect(jsonPath("$[0].checks").value(3))
+                .andExpect(jsonPath("$[0].failures").value(1));
+        Cookie stranger = TestUsers.signUp(mvc, TestUsers.uniqueEmail());
+        mvc.perform(get("/api/monitors/{id}/response-times", shop).cookie(stranger)).andExpect(status().isNotFound());
+    }
+
+    @Test
     void redeliveredCheckCountsOnceInRollups() {
         CheckTask task = new CheckTask(shop, "https://x", CheckType.HTTP, null, 5000);
         recorder.record(task, CheckOutcome.up(200, 100), Instant.now(), "job-" + shop);

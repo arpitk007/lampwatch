@@ -20,7 +20,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** End to end: the real scheduler claims a monitor, checks a local server and stores the result. */
-@SpringBootTest(properties = "uptime.poll-ms=200")
+@SpringBootTest(properties = {"uptime.poll-ms=200", "uptime.allow-private-targets=true"})
 @Import(TestcontainersConfiguration.class)
 class CheckSchedulerFlowTest {
 

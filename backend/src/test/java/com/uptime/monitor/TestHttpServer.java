@@ -22,6 +22,14 @@ public final class TestHttpServer implements AutoCloseable {
             ex.getResponseHeaders().add("Location", "/ok");
             respond(ex, 302, "");
         });
+        server.createContext("/to-metadata", ex -> {
+            ex.getResponseHeaders().add("Location", "http://169.254.169.254/latest/meta-data/");
+            respond(ex, 302, "");
+        });
+        server.createContext("/loop", ex -> {
+            ex.getResponseHeaders().add("Location", "/loop");
+            respond(ex, 302, "");
+        });
         server.createContext("/slow", ex -> {
             try {
                 Thread.sleep(3000);
