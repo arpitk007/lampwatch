@@ -11,12 +11,18 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
+/**
+ * Dynamic updates write only changed columns, so a user edit never overwrites
+ * the status and failure count that checks update in parallel.
+ */
 @Entity
+@DynamicUpdate
 @Table(name = "monitors")
 public class Monitor {
 
