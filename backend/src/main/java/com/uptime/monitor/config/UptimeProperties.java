@@ -24,5 +24,23 @@ public record UptimeProperties(
         /** Largest response body read for keyword checks. */
         @DefaultValue("1048576") int maxBodyBytes,
         /** Cap per account, since anyone can sign up on the public site. */
-        @DefaultValue("20") int maxMonitorsPerUser) {
+        @DefaultValue("20") int maxMonitorsPerUser,
+        @DefaultValue Alerts alerts) {
+
+    /**
+     * @param mailFrom          sender address for alert emails
+     * @param telegramBotToken  empty disables Telegram delivery
+     * @param telegramApiBase   overridable so tests can stand in for Telegram
+     * @param appUrl            linked from alerts
+     * @param maxAttempts       sends before an alert is marked FAILED
+     * @param maxChannelsPerUser cap, since channels can target any address
+     */
+    public record Alerts(
+            @DefaultValue("alerts@uptime.local") String mailFrom,
+            @DefaultValue("") String telegramBotToken,
+            @DefaultValue("https://api.telegram.org") String telegramApiBase,
+            @DefaultValue("http://localhost:4300") String appUrl,
+            @DefaultValue("6") int maxAttempts,
+            @DefaultValue("5") int maxChannelsPerUser) {
+    }
 }

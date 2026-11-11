@@ -121,6 +121,7 @@ input:not([type='radio']), select {
   border: 1px solid var(--button-border);
   border-radius: 4px;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color 150ms ease;
 

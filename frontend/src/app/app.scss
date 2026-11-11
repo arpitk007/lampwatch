@@ -32,6 +32,26 @@
   svg { width: 1.5rem; height: 1.5rem; fill: none; stroke: var(--up); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 }
 
+.nav {
+  display: flex;
+  gap: var(--space-1);
+  margin-right: auto;
+  margin-left: var(--space-6);
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+  }
+  a:hover { color: var(--ink); }
+  a.active { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); border-radius: 0; }
+}
+
 .account {
   display: flex;
   align-items: center;
@@ -56,4 +76,7 @@ main {
 @media (max-width: 520px) {
   .bar, main { padding-left: var(--space-4); padding-right: var(--space-4); }
   .email { display: none; }
+  .nav { margin-left: var(--space-1); }
+  .nav a { padding: 0 var(--space-2); }
+  .account .button { padding: 0 var(--space-2); }
 }

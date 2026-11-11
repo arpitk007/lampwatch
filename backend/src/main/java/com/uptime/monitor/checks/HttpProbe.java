@@ -1,6 +1,7 @@
 package com.uptime.monitor.checks;
 
 import com.uptime.monitor.config.UptimeProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -35,8 +36,13 @@ public class HttpProbe {
 
     private final int maxBodyBytes;
 
+    @Autowired
     public HttpProbe(UptimeProperties props) {
-        this.maxBodyBytes = props.maxBodyBytes();
+        this(props.maxBodyBytes());
+    }
+
+    public HttpProbe(int maxBodyBytes) {
+        this.maxBodyBytes = maxBodyBytes;
     }
 
     /**

@@ -8,9 +8,9 @@ public final class IncidentEvents {
     private IncidentEvents() {
     }
 
-    public record Opened(long incidentId, long monitorId, String monitorName, String url, String cause, Instant at) {
+    public record Opened(long incidentId, long ownerId, long monitorId, String monitorName, String url, String cause, Instant at) {
     }
 
-    public record Resolved(long incidentId, long monitorId, String monitorName, String url, Instant startedAt, Instant at) {
+    public record Resolved(long incidentId, long ownerId, long monitorId, String monitorName, String url, Instant startedAt, Instant at) {
     }
 }

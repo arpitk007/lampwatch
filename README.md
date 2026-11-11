@@ -5,7 +5,7 @@ Checks websites on a schedule, records response times, and serves public status 
 ## Run locally
 
 ```bash
-docker compose up -d --wait               # MySQL on 3307, Redis on 6381
+docker compose up -d --wait               # MySQL 3307, Redis 6381, Mailpit 1026 (UI on 8026)
 cd backend && ./mvnw spring-boot:run      # API on http://localhost:8090
 cd frontend && npm install && npx ng serve --port 4300   # UI on http://localhost:4300
 ```
@@ -51,6 +51,10 @@ All `/api/monitors` endpoints need a signed-in session.
 | DELETE | `/api/monitors/{id}` | Delete a monitor and its results |
 | GET | `/api/monitors/{id}/checks?limit=50` | Latest check results, newest first |
 | GET | `/api/monitors/{id}/incidents?limit=20` | Incidents, newest first |
+| GET | `/api/channels` | Alert channels with their last delivery |
+| POST | `/api/channels` | Add an email or Telegram channel |
+| DELETE | `/api/channels/{id}` | Remove a channel |
+| POST | `/api/channels/{id}/test` | Send a test alert (once a minute) |
 | GET | `/api/monitors/heartbeats?limit=30` | Latest results for every monitor in one query (LATERAL join), oldest first |
 
 ## How checks run
@@ -93,6 +97,19 @@ Each monitor's status is a small state machine (state pattern, `incidents/Monito
 - Status fields are excluded from optimistic locking, so a check landing while you edit a monitor doesn't fail your save, and your save doesn't undo the check.
 - MySQL allows only one open incident per monitor: a generated column is `1` while open and `NULL` once resolved, under a unique key with `monitor_id`.
 - Opening or resolving an incident publishes an event after the transaction commits; alerts subscribe to these.
+
+## Alerts
+
+When an incident opens or resolves, every alert channel of the monitor's owner gets a message: email, or Telegram through a bot.
+
+- **Transactional outbox.** Alert rows go into `notification_outbox` inside the transaction that opens or resolves the incident (`@TransactionalEventListener(BEFORE_COMMIT)`). Both commit together, so a crash can't lose an alert and a rolled-back check can't send one.
+- **Exactly one alert per channel per event.** A unique key on `(channel_id, incident_id, kind)` with `INSERT IGNORE` makes a repeated event harmless.
+- **Dispatcher.** Every 5 seconds it claims due rows with `SELECT … FOR UPDATE OF o SKIP LOCKED`, leases them for 2 minutes, then sends. Several instances never send the same alert, and one that dies mid-send leaves the row to be retried.
+- **Retries.** Failures back off 30 s, 2 min, 8 min, 32 min, then hourly. After 6 attempts the row is `FAILED`, and the Alerts page shows the error.
+- **Senders** implement `AlertSender` (strategy pattern), so adding Slack or Discord is one class.
+- **Abuse limits.** A channel can point at any address, so each account has at most 5 channels and one test alert per channel per minute.
+
+Locally, email goes to Mailpit; open http://localhost:8026 to read it. In production set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `ALERTS_FROM`, `APP_URL`, and `TELEGRAM_BOT_TOKEN` for Telegram.
 
 ## Tests
 

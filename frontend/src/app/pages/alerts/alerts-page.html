@@ -1,0 +1,61 @@
+<h1>Alerts</h1>
+<p class="lede">When a monitor goes down, and again when it’s back, every channel below gets a message.</p>
+
+@if (error(); as message) { <p class="notice" role="alert">{{ message }}</p> }
+
+@if (channels(); as list) {
+  @if (list.length === 0) {
+    <p class="muted">No channels yet, so outages won’t reach you. Add one below.</p>
+  } @else {
+    <ul class="channels">
+      @for (c of list; track c.id) {
+        <li>
+          <div class="who">
+            <span class="type">{{ typeLabel[c.type] }}</span>
+            <span class="target">{{ c.target }}</span>
+            <span class="delivery" [class.failed]="c.lastDelivery?.status === 'FAILED'">{{ deliveryLine(c) }}</span>
+            @if (notes()[c.id]; as n) { <span class="note" [class.problem]="!n.ok" role="status">{{ n.text }}</span> }
+          </div>
+          <div class="actions">
+            <button class="button" type="button" (click)="sendTest(c)">Send test</button>
+            <button class="button quiet" type="button" (click)="remove(c)">Remove</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+} @else if (!error()) {
+  <p class="muted">Loading…</p>
+}
+
+<section class="add" aria-labelledby="add-title">
+  <h2 id="add-title">Add a channel</h2>
+  <form [formGroup]="form" (ngSubmit)="add()" novalidate>
+    <fieldset class="types">
+      <legend>Send to</legend>
+      <label class="choice"><input type="radio" formControlName="type" value="EMAIL" /> Email</label>
+      <label class="choice"><input type="radio" formControlName="type" value="TELEGRAM" /> Telegram</label>
+    </fieldset>
+
+    <div class="field">
+      <label for="target">{{ isTelegram() ? 'Telegram chat id' : 'Email address' }}</label>
+      <input id="target" formControlName="target" autocomplete="off"
+             [attr.inputmode]="isTelegram() ? 'numeric' : 'email'"
+             [attr.placeholder]="isTelegram() ? '123456789' : 'team@example.com'"
+             aria-describedby="target-help" />
+      <p class="help" id="target-help">
+        @if (isTelegram()) {
+          Send any message to this site’s Telegram bot first, so it’s allowed to message you. Then enter your numeric chat id; @userinfobot on Telegram tells you yours.
+        } @else {
+          Any address works, including a team inbox.
+        }
+      </p>
+    </div>
+
+    @if (formError(); as e) { <p class="notice" role="alert">{{ e }}</p> }
+
+    <div>
+      <button class="button primary" type="submit" [disabled]="busy()">{{ busy() ? 'Adding…' : 'Add channel' }}</button>
+    </div>
+  </form>
+</section>

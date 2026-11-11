@@ -76,14 +76,14 @@ public class CheckResultRecorder {
     private void openIncident(Monitor monitor, CheckOutcome outcome, Instant at) {
         Incident incident = incidents.save(new Incident(monitor.getId(), at, outcome.errorMessage()));
         events.publishEvent(new IncidentEvents.Opened(
-                incident.getId(), monitor.getId(), monitor.getName(), monitor.getUrl(), incident.getCause(), at));
+                incident.getId(), monitor.getOwnerId(), monitor.getId(), monitor.getName(), monitor.getUrl(), incident.getCause(), at));
     }
 
     private void resolveIncident(Monitor monitor, Instant at) {
         incidents.findFirstByMonitorIdAndResolvedAtIsNull(monitor.getId()).ifPresent(incident -> {
             incident.resolve(at);
             events.publishEvent(new IncidentEvents.Resolved(
-                    incident.getId(), monitor.getId(), monitor.getName(), monitor.getUrl(), incident.getStartedAt(), at));
+                    incident.getId(), monitor.getOwnerId(), monitor.getId(), monitor.getName(), monitor.getUrl(), incident.getStartedAt(), at));
         });
     }
 

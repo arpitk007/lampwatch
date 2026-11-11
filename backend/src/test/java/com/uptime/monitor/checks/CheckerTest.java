@@ -1,7 +1,6 @@
 package com.uptime.monitor.checks;
 
 import com.uptime.monitor.TestHttpServer;
-import com.uptime.monitor.config.UptimeProperties;
 import com.uptime.monitor.monitors.CheckType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,7 +20,7 @@ class CheckerTest {
     @BeforeAll
     static void start() throws IOException {
         server = new TestHttpServer();
-        HttpProbe probe = new HttpProbe(new UptimeProperties(50, 8, 60_000, 3, 300_000, 3, 2, 3000, 1_048_576, 20));
+        HttpProbe probe = new HttpProbe(1_048_576);
         http = new HttpChecker(probe);
         keyword = new KeywordChecker(probe);
     }
