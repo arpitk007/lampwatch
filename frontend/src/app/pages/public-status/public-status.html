@@ -1,0 +1,75 @@
+@if (notFound()) {
+  <h1>No status page here</h1>
+  <p class="muted">Check the address, or ask whoever shared it for the right link.</p>
+} @else if (page(); as p) {
+  <h1>{{ p.title }}</h1>
+
+  <p class="headline" [class]="'headline ' + headline().tone" role="status">
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      @switch (headline().tone) {
+        @case ('up') { <circle cx="6" cy="6" r="5" /> }
+        @case ('slow') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
+        @default { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+      }
+    </svg>
+    {{ headline().text }}
+  </p>
+
+  @if (error(); as e) { <p class="notice" role="alert">{{ e }} Showing the last data loaded.</p> }
+
+  @if (p.monitors.length === 0) {
+    <p class="muted">This page doesn’t list any services yet.</p>
+  } @else {
+    <ul class="legend" aria-label="Bar colors">
+      <li><span class="swatch full"></span>No downtime</li>
+      <li><span class="swatch minor"></span>Under 1% downtime</li>
+      <li><span class="swatch major"></span>1% downtime or more</li>
+      <li><span class="swatch none"></span>No data</li>
+    </ul>
+
+    <ul class="services">
+      @for (m of p.monitors; track m.name + $index) {
+        <li>
+          <div class="service-head">
+            <span class="name">{{ m.name }}</span>
+            <span class="state" [class]="'state s-' + m.status">{{ statusWord[m.status] }}</span>
+          </div>
+          <app-uptime-bars [days]="m.days" />
+          <div class="service-foot">
+            <span>{{ dayLabel(m.days[0].date) }}</span>
+            <span class="uptime">{{ m.uptime30d === null ? 'No data yet' : uptimeLabel(m.uptime30d) + ' over 30 days' }}</span>
+            <span>Today</span>
+          </div>
+          <details>
+            <summary>Day by day</summary>
+            <table>
+              <thead><tr><th scope="col">Day (UTC)</th><th scope="col">Uptime</th></tr></thead>
+              <tbody>
+                @for (d of m.days; track d.date) { <tr><td>{{ dayLabel(d.date) }}</td><td>{{ uptimeLabel(d.uptime) }}</td></tr> }
+              </tbody>
+            </table>
+          </details>
+        </li>
+      }
+    </ul>
+  }
+
+  <section class="incidents" aria-labelledby="past-title">
+    <h2 id="past-title">Past 14 days</h2>
+    @if (p.incidents.length === 0) {
+      <p class="muted">No incidents.</p>
+    } @else {
+      <ul>
+        @for (i of p.incidents; track i.startedAt + i.monitorName) {
+          <li [class.open]="!i.resolvedAt"><strong>{{ i.monitorName }}</strong> {{ incidentLine(i) }}</li>
+        }
+      </ul>
+    }
+  </section>
+
+  <p class="footer">Updated {{ generated(p) }}. Refreshes every minute. Powered by <a routerLink="/">Uptime</a>.</p>
+} @else if (error(); as e) {
+  <p class="notice" role="alert">{{ e }}</p>
+} @else {
+  <p class="muted">Loading…</p>
+}

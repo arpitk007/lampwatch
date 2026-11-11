@@ -49,6 +49,7 @@
     border-radius: 4px;
   }
   a:hover { color: var(--ink); }
+  a { white-space: nowrap; }
   a.active { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); border-radius: 0; }
 }
 
@@ -76,7 +77,8 @@ main {
 @media (max-width: 520px) {
   .bar, main { padding-left: var(--space-4); padding-right: var(--space-4); }
   .email { display: none; }
-  .nav { margin-left: var(--space-1); }
-  .nav a { padding: 0 var(--space-2); }
+  .bar { flex-wrap: wrap; row-gap: 0; }
+  .nav { order: 3; width: 100%; margin: 0 0 0 calc(-1 * var(--space-2)); overflow-x: auto; }
+  .nav a { padding: 0 var(--space-2); white-space: nowrap; }
   .account .button { padding: 0 var(--space-2); }
 }

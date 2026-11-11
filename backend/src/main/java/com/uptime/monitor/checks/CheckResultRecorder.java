@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
@@ -54,6 +55,7 @@ public class CheckResultRecorder {
         if (!insertResult(task, outcome, checkedAt, jobId)) {
             return false;
         }
+        addToHourlyRollup(task.monitorId(), outcome, checkedAt);
         Optional<Monitor> locked = monitors.findByIdForUpdate(task.monitorId());
         if (locked.isEmpty()) {
             return false;
@@ -85,6 +87,25 @@ public class CheckResultRecorder {
             events.publishEvent(new IncidentEvents.Resolved(
                     incident.getId(), monitor.getOwnerId(), monitor.getId(), monitor.getName(), monitor.getUrl(), incident.getStartedAt(), at));
         });
+    }
+
+    /** Same transaction as the raw result, so the rollup can never disagree with what was recorded. */
+    private void addToHourlyRollup(long monitorId, CheckOutcome outcome, Instant checkedAt) {
+        boolean timed = outcome.success() && outcome.responseTimeMs() != null;
+        jdbc.sql("""
+                        INSERT INTO check_rollups_hourly (monitor_id, hour_start, checks, failures, response_ms_total, response_count)
+                        VALUES (:monitor, :hour, 1, :failures, :ms, :timed) AS new
+                        ON DUPLICATE KEY UPDATE
+                            checks = check_rollups_hourly.checks + 1,
+                            failures = check_rollups_hourly.failures + new.failures,
+                            response_ms_total = check_rollups_hourly.response_ms_total + new.response_ms_total,
+                            response_count = check_rollups_hourly.response_count + new.response_count""")
+                .param("monitor", monitorId)
+                .param("hour", LocalDateTime.ofInstant(checkedAt.truncatedTo(ChronoUnit.HOURS), ZoneOffset.UTC))
+                .param("failures", outcome.success() ? 0 : 1)
+                .param("ms", timed ? outcome.responseTimeMs() : 0)
+                .param("timed", timed ? 1 : 0)
+                .update();
     }
 
     private boolean insertResult(CheckTask task, CheckOutcome outcome, Instant checkedAt, String jobId) {

@@ -55,6 +55,10 @@ All `/api/monitors` endpoints need a signed-in session.
 | POST | `/api/channels` | Add an email or Telegram channel |
 | DELETE | `/api/channels/{id}` | Remove a channel |
 | POST | `/api/channels/{id}/test` | Send a test alert (once a minute) |
+| GET | `/api/status-page` | Your status page settings |
+| PUT | `/api/status-page` | Create or update your status page |
+| DELETE | `/api/status-page` | Take your status page offline |
+| GET | `/api/public/status-pages/{address}` | The public page (no sign-in, cached 30 s) |
 | GET | `/api/monitors/heartbeats?limit=30` | Latest results for every monitor in one query (LATERAL join), oldest first |
 
 ## How checks run
@@ -110,6 +114,17 @@ When an incident opens or resolves, every alert channel of the monitor's owner g
 - **Abuse limits.** A channel can point at any address, so each account has at most 5 channels and one test alert per channel per minute.
 
 Locally, email goes to Mailpit; open http://localhost:8026 to read it. In production set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `ALERTS_FROM`, `APP_URL`, and `TELEGRAM_BOT_TOKEN` for Telegram.
+
+## Status pages
+
+Each account can publish one public page at `/s/<address>` with chosen monitors: current status, 30 days of daily uptime bars, uptime over 30 days, and incidents from the past 14 days.
+
+- **Hourly rollups.** Every recorded check also updates `check_rollups_hourly` in the same transaction (`INSERT … ON DUPLICATE KEY UPDATE`). A 30-day page reads about 720 rollup rows per monitor instead of tens of thousands of raw checks. Redelivered checks are skipped before the rollup, so they count once.
+- **Retention.** A nightly job deletes raw results after 7 days, rollups after 90 days and sent alerts after 30 days, in batches of 5,000 so no statement holds locks for long. An index on `checked_at` keeps those deletes from scanning the table.
+- **Redis cache-aside.** The public page is built at most once per 30 seconds per address and served from Redis in between, which absorbs the traffic spike when a status link is shared during an outage. Saving the page evicts it. The response also sends `Cache-Control: public, max-age=30`.
+- **Privacy.** Public pages show service names and status only, never URLs or error messages, which can reveal internal hosts.
+- **Honest numbers.** Any recorded failure caps displayed uptime at 99.99%, so real downtime never rounds up to 100%.
+- **Accessible bars.** Each day's band is shown by color and by stripes for major downtime, with a legend, hover and keyboard readouts, and a day-by-day table. The bar colors passed the dataviz palette validator for colorblind separation.
 
 ## Tests
 

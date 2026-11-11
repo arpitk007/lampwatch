@@ -1,0 +1,49 @@
+<h1>Status page</h1>
+<p class="lede">A public page your users can check during an outage. It shows each service’s status and 30 days of uptime, never your URLs or error details.</p>
+
+@if (saved(); as page) {
+  <p class="live">
+    Live at <a [routerLink]="['/s', page.slug]">{{ origin }}/s/{{ page.slug }}</a>
+  </p>
+}
+
+@if (monitors(); as list) {
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="field">
+      <label for="title">Title</label>
+      <input id="title" formControlName="title" placeholder="Acme status" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="slug">Address</label>
+      <div class="slug">
+        <span class="prefix" aria-hidden="true">{{ origin }}/s/</span>
+        <input id="slug" formControlName="slug" placeholder="acme" autocomplete="off" autocapitalize="off" spellcheck="false"
+               [attr.aria-invalid]="slugError() ? true : null" aria-describedby="slug-error" />
+      </div>
+      @if (slugError(); as e) { <p class="error" id="slug-error">{{ e }}</p> }
+    </div>
+
+    <fieldset class="field">
+      <legend>Services to show</legend>
+      @if (list.length === 0) {
+        <p class="muted">Add a monitor first; it can then appear here.</p>
+      }
+      @for (m of list; track m.id) {
+        <label class="choice">
+          <input type="checkbox" [checked]="isSelected(m.id)" (change)="toggle(m.id, $any($event.target).checked)" />
+          {{ m.name }}
+        </label>
+      }
+    </fieldset>
+
+    @if (message(); as m) { <p [class]="m.ok ? 'ok' : 'notice'" role="status">{{ m.text }}</p> }
+
+    <div class="actions">
+      <button class="button primary" type="submit" [disabled]="busy()">{{ busy() ? 'Saving…' : saved() ? 'Save changes' : 'Publish page' }}</button>
+      @if (saved()) { <button class="button quiet" type="button" (click)="remove()">Take offline</button> }
+    </div>
+  </form>
+} @else {
+  <p class="muted">Loading…</p>
+}
