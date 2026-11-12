@@ -59,4 +59,16 @@ describe('HeartbeatStrip', () => {
     await fixture.whenStable();
     expect(live()).toContain('passed in 120 ms'); // can't move onto empty padding
   });
+
+  it('marks checks over the Slow threshold and scales every strip to that threshold', async () => {
+    fixture = TestBed.createComponent(HeartbeatStrip);
+    fixture.componentRef.setInput('checks', [check(true, 1500, 3), check(true, 4000, 2), check(true, 3000, 1)]);
+    fixture.componentRef.setInput('slots', 3);
+    fixture.componentRef.setInput('slowAfterMs', 3000);
+    await fixture.whenStable();
+    const bars = Array.from(el().querySelectorAll<HTMLElement>('.bar'));
+    expect(bars.map((b) => b.classList[1])).toEqual(['up', 'slow', 'up']); // exactly at the threshold is not slow
+    expect(bars[0].style.height).toBe('65%'); // 30 + 70 * 1500/3000, not relative to the 4000 ms bar
+    expect(bars[2].style.height).toBe('100%');
+  });
 });

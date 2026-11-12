@@ -41,9 +41,19 @@
             <li>
               <div class="service-head">
                 <span class="name">{{ m.name }}</span>
-                <span class="state" [class]="'state s-' + m.status">{{ statusWord[m.status] }}</span>
+                <span class="state" [class]="'state s-' + m.status">
+                  <svg viewBox="0 0 12 12" aria-hidden="true">
+                    @switch (m.status) {
+                      @case ('UP') { <circle cx="6" cy="6" r="5" /> }
+                      @case ('DOWN') { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+                      @case ('DEGRADED') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
+                      @default { <circle cx="6" cy="6" r="4.2" fill="none" stroke-width="1.6" /> }
+                    }
+                  </svg>
+                  {{ statusWord[m.status] }}
+                </span>
               </div>
-              <app-uptime-bars [days]="m.days" />
+              <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" />
               <div class="service-foot">
                 <span>30 days ago</span>
                 <span class="uptime">{{ m.uptime30d === null ? 'No data yet' : uptimeLabel(m.uptime30d) }}</span>

@@ -65,9 +65,9 @@
                 @if (m.downSince && !m.paused) { <span class="since">for {{ downFor(m.downSince) }}</span> }
                 @else { <span class="when">{{ timeAgo(m.lastCheckedAt, now()) }}</span> }
               </span>
-              <app-heartbeat-strip class="beats" [checks]="beatsFor(m.id)" [slots]="30" [height]="24" />
+              <app-heartbeat-strip class="beats" [checks]="beatsFor(m.id)" [slots]="30" [height]="24" [slowAfterMs]="slowAfterMs()" />
               <span class="numbers">
-                <span class="ms">{{ latestMs(m.id) !== null ? latestMs(m.id) + ' ms' : '–' }}</span>
+                <span class="ms">{{ latestMs(m.id) !== null ? latestMs(m.id) + ' ms' : m.status === 'DOWN' && !m.paused ? 'No response' : '–' }}</span>
                 <span class="when">{{ intervalLabel(m.intervalSeconds) }}</span>
               </span>
             </a>

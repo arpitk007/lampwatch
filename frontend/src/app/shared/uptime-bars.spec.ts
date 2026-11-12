@@ -35,4 +35,16 @@ describe('UptimeBars', () => {
     await fixture.whenStable();
     expect(el.querySelector('[aria-live]')?.textContent).toContain('97.50% uptime');
   });
+
+  it('shows today as down while an outage is ongoing, even before today has a rollup', async () => {
+    const fixture = TestBed.createComponent(UptimeBars);
+    fixture.componentRef.setInput('days', [
+      { date: '2026-11-10', uptime: 100 },
+      { date: '2026-11-11', uptime: null },
+    ]);
+    fixture.componentRef.setInput('downNow', true);
+    await fixture.whenStable();
+    const bars = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('.bar')).map((b) => b.classList[1]);
+    expect(bars).toEqual(['full', 'major']);
+  });
 });

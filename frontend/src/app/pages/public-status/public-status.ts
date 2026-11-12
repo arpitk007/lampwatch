@@ -22,21 +22,30 @@ export class PublicStatus implements OnInit {
   protected readonly notFound = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  /** Names the affected services, so a visitor learns what is broken without scrolling. */
   protected readonly headline = computed(() => {
+    const monitors = this.page()?.monitors ?? [];
+    const named = (status: string, verb: string) => {
+      const names = monitors.filter((m) => m.status === status).map((m) => m.name);
+      if (names.length === 0) return `Some services are ${verb}`;
+      if (names.length === 1) return `${names[0]} is ${verb}`;
+      if (names.length <= 3) return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} are ${verb}`;
+      return `${names.length} services are ${verb}`;
+    };
     switch (this.page()?.overall) {
       case 'MAJOR_OUTAGE':
-        return { tone: 'down', text: 'Major outage' };
+        return { tone: 'down', text: monitors.length > 1 && monitors.every((m) => m.status === 'DOWN') ? 'All services are down' : named('DOWN', 'down') };
       case 'PARTIAL_OUTAGE':
-        return { tone: 'down', text: 'Some systems are down' };
+        return { tone: 'down', text: named('DOWN', 'down') };
       case 'DEGRADED':
-        return { tone: 'slow', text: 'Some systems are slow' };
+        return { tone: 'slow', text: named('DEGRADED', 'slow') };
       default:
         return { tone: 'up', text: 'All systems operational' };
     }
   });
 
   protected readonly statusWord: Record<string, string> = {
-    UP: 'Operational', DEGRADED: 'Slow', DOWN: 'Down', PAUSED: 'Paused', UNKNOWN: 'No data yet',
+    UP: 'Operational', DEGRADED: 'Slower than usual', DOWN: 'Down', PAUSED: 'Paused', UNKNOWN: 'No data yet',
   };
   protected readonly uptimeLabel = uptimeLabel;
   protected readonly dayLabel = dayLabel;

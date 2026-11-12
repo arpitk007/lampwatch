@@ -59,11 +59,12 @@
   padding-bottom: var(--space-3);
   color: inherit;
   text-decoration: none;
-  box-shadow: inset 3px 0 0 transparent;
 
   &:hover { background: var(--paper); }
   &:hover .name { color: var(--accent); }
-  &.is-down { box-shadow: inset 3px 0 0 var(--down); }
+  &.is-down { background: color-mix(in srgb, var(--danger-bg) 70%, var(--surface)); }
+  &.is-down:hover { background: var(--danger-bg); }
+  &.is-down .ms { color: var(--down); font-weight: 500; }
   &.is-paused .beats { opacity: 0.45; }
 }
 

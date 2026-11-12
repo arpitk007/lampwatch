@@ -10,14 +10,45 @@
       <h1>{{ m.name }}</h1>
       <a class="url" [href]="m.url" target="_blank" rel="noopener noreferrer">{{ m.url }}</a>
     </div>
-    <div class="actions">
-      <button class="button" type="button" (click)="togglePause(m)" [disabled]="busy()">
-        {{ m.paused ? 'Resume checks' : 'Pause checks' }}
-      </button>
-      <a class="button" [routerLink]="['/monitors', m.id, 'edit']">Edit</a>
-      <button class="button danger" type="button" (click)="remove(m)" [disabled]="busy()">Delete</button>
-    </div>
+    @if (!outage()) {
+      <div class="actions">
+        <button class="button" type="button" (click)="togglePause(m)" [disabled]="busy()">
+          {{ m.paused ? 'Resume checks' : 'Pause checks' }}
+        </button>
+        <a class="button" [routerLink]="['/monitors', m.id, 'edit']">Edit</a>
+      </div>
+    }
   </header>
+
+  @if (outage(); as o) {
+    <section class="outage" aria-labelledby="outage-title">
+      <svg class="outage-mark" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 L11 10.5 L1 10.5 Z" /></svg>
+      <div class="outage-main">
+        <h2 id="outage-title">
+          Down{{ o.since ? ' for ' + lasted({ startedAt: o.since, resolvedAt: null }) : '' }}
+        </h2>
+        <p class="outage-fact">
+          @if (o.sinceLabel) { Since {{ o.sinceLabel }}. }
+          @if (o.cause) { Last error: <strong>{{ o.cause }}</strong>. }
+        </p>
+        @if (o.channelsLoaded) {
+          @if (o.channels.length === 0) {
+            <p class="outage-fact">No alert channels, so nobody was notified. <a routerLink="/alerts">Add an alert channel</a></p>
+          } @else {
+            <ul class="outage-channels">
+              @for (c of o.channels; track c.id) {
+                <li [class]="c.state"><span class="who">{{ c.who }}</span> {{ c.text }}</li>
+              }
+            </ul>
+          }
+        }
+      </div>
+      <div class="outage-actions">
+        <a class="button on-alarm" [routerLink]="['/monitors', m.id, 'edit']">Edit URL or check</a>
+        <button class="button on-alarm" type="button" (click)="togglePause(m)" [disabled]="busy()">Pause checks</button>
+      </div>
+    </section>
+  }
 
   <section class="panel" aria-labelledby="pulse-title">
     <h2 id="pulse-title" class="visually-hidden">Current state</h2>
@@ -28,6 +59,7 @@
           <app-status-badge [status]="m.status" [paused]="m.paused" />
           <span class="sub">
             @if (m.downSince && !m.paused) { for {{ lasted({ startedAt: m.downSince, resolvedAt: null }) }} }
+            @else if (m.status === 'DEGRADED' && !m.paused && rules(); as r) { last check took over {{ secondsLabel(r.slowAfterMs) }} }
             @else { checked {{ timeAgo(m.lastCheckedAt, now()) }} }
           </span>
         </dd>
@@ -52,8 +84,15 @@
       </div>
     </dl>
     <div class="strip">
-      <app-heartbeat-strip [checks]="oldestFirst()" [slots]="90" [height]="56" [interactive]="true" />
+      <app-heartbeat-strip [checks]="oldestFirst()" [slots]="90" [height]="56" [interactive]="true" [slowAfterMs]="rules()?.slowAfterMs ?? null" />
       <div class="strip-axis"><span>{{ checks().length || 90 }} checks ago</span><span>Now</span></div>
+      @if (rules(); as r) {
+        <ul class="strip-key" aria-label="How to read the bars">
+          <li><span class="key up"></span>Passed, taller is slower</li>
+          <li><span class="key slow"></span>Slow: took over {{ secondsLabel(r.slowAfterMs) }}</li>
+          <li><span class="key down"></span>Failed</li>
+        </ul>
+      }
     </div>
   </section>
 
@@ -89,7 +128,7 @@
   <section class="panel" aria-labelledby="incidents-title">
     <div class="panel-head">
       <h2 id="incidents-title">Incidents</h2>
-      <span class="meta">Opens after 3 failed checks in a row, closes after 2 passes</span>
+      @if (rules(); as r) { <span class="meta">Opens after {{ r.failuresToDown }} failed checks in a row, closes after {{ r.passesToRecover }} passes</span> }
     </div>
     @if (incidents().length === 0) {
       <p class="panel-body muted">No outages recorded.</p>
@@ -139,6 +178,14 @@
         </div>
       }
     }
+  </section>
+
+  <section class="panel danger-zone" aria-labelledby="delete-title">
+    <div class="danger-text">
+      <h2 id="delete-title">Delete this monitor</h2>
+      <p>Removes its check history and incidents, and takes it off your status page. To stop checks but keep the history, pause it instead.</p>
+    </div>
+    <button class="button danger" type="button" (click)="remove(m)" [disabled]="busy()">Delete monitor</button>
   </section>
 } @else if (!error()) {
   <p class="muted">Loading…</p>

@@ -44,19 +44,35 @@
       @for (m of list; track m.id) {
         <label class="choice">
           <input type="checkbox" [checked]="isSelected(m.id)" (change)="toggle(m.id, $any($event.target).checked)" />
-          {{ m.name }}
+          <span class="choice-name">{{ m.name }}</span>
+          @if (m.status === 'DOWN' && !m.paused) { <span class="choice-state">Down now</span> }
         </label>
+      }
+      @if (hiddenWhileDown().length > 0) {
+        <p class="warn" role="status">
+          {{ hiddenWhileDown().join(', ') }} {{ hiddenWhileDown().length === 1 ? 'is' : 'are' }} down right now.
+          Hiding {{ hiddenWhileDown().length === 1 ? 'it' : 'them' }} means visitors won’t see this outage on your page.
+        </p>
       }
     </fieldset>
 
     </div>
 
     <div class="foot">
-      @if (saved()) { <button class="button danger" type="button" (click)="remove()">Take offline</button> }
       @if (message(); as m) { <p [class]="m.ok ? 'ok' : 'notice'" role="status">{{ m.text }}</p> }
       <button class="button primary" type="submit" [disabled]="busy()">{{ busy() ? 'Saving…' : saved() ? 'Save changes' : 'Publish page' }}</button>
     </div>
   </form>
+
+  @if (saved(); as page) {
+    <section class="panel danger-zone" aria-labelledby="offline-title">
+      <div class="danger-text">
+        <h2 id="offline-title">Take the page offline</h2>
+        <p>Visitors to {{ origin }}/s/{{ page.slug }} will see “No status page here” until you publish again.</p>
+      </div>
+      <button class="button danger" type="button" (click)="remove()">Take offline</button>
+    </section>
+  }
 } @else {
   <p class="muted">Loading…</p>
 }

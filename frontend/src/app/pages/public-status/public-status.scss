@@ -65,7 +65,14 @@ h1 { margin: 0 0 var(--space-3); font-size: var(--text-lg); font-weight: 500; op
   margin-bottom: var(--space-3);
 }
 .name { font-weight: 600; }
-.state { font-weight: 500; font-size: var(--text-sm); }
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: 500;
+  font-size: var(--text-sm);
+  svg { width: 0.7em; height: 0.7em; fill: currentColor; stroke: currentColor; }
+}
 .s-UP { color: var(--up); }
 .s-DEGRADED { color: var(--slow); }
 .s-DOWN { color: var(--down); }

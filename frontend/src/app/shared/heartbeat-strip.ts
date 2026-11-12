@@ -2,15 +2,16 @@ import { Component, computed, input, signal } from '@angular/core';
 import { CheckResult } from '../api/monitor-api';
 
 interface Bar {
-  kind: 'up' | 'down' | 'empty';
+  kind: 'up' | 'slow' | 'down' | 'empty';
   height: number;
   label: string;
 }
 
 /**
  * The last N checks as vertical bars, newest on the right.
- * Passed checks scale with response time. Failed checks are full height, red and
- * striped, so they differ by shape and texture as well as color.
+ * Passed checks scale with response time against `slowAfterMs`, so every strip on a page shares one scale
+ * and a full-height bar means "at the Slow threshold". Slow checks are full height and solid amber;
+ * failed checks are full height, red and striped, so each state differs by texture as well as color.
  * Each bar's column is its hover target; with `interactive`, arrow keys read each check.
  */
 @Component({
@@ -63,6 +64,7 @@ interface Bar {
       border-radius: 4px 4px 0 0;
     }
     .up { background: var(--up); }
+    .slow { background: var(--slow-mark); }
     .down {
       background: repeating-linear-gradient(135deg, var(--down) 0 3px, var(--down-soft) 3px 5px);
     }
@@ -91,12 +93,14 @@ export class HeartbeatStrip {
   readonly slots = input(30);
   readonly height = input(28);
   readonly interactive = input(false);
+  /** The Slow threshold; until it is known, bars scale to the slowest check in the strip. */
+  readonly slowAfterMs = input<number | null>(null);
 
   protected readonly active = signal<number | null>(null);
 
   protected readonly bars = computed<Bar[]>(() => {
     const recent = this.checks().slice(-this.slots());
-    const slowest = Math.max(1, ...recent.map((c) => c.responseTimeMs ?? 0));
+    const scale = this.slowAfterMs() ?? Math.max(1, ...recent.map((c) => c.responseTimeMs ?? 0));
     const padding: Bar[] = Array.from({ length: this.slots() - recent.length }, () => ({
       kind: 'empty',
       height: 18,
@@ -110,7 +114,11 @@ export class HeartbeatStrip {
         return { kind: 'down', height: 100, label: `${when}: failed, ${c.errorMessage ?? 'no response'}` };
       }
       const ms = c.responseTimeMs ?? 0;
-      return { kind: 'up', height: 30 + 70 * (ms / slowest), label: `${when}: passed in ${ms} ms` };
+      const threshold = this.slowAfterMs();
+      if (threshold !== null && ms > threshold) {
+        return { kind: 'slow', height: 100, label: `${when}: passed in ${ms} ms, slow` };
+      }
+      return { kind: 'up', height: 30 + 70 * Math.min(1, ms / scale), label: `${when}: passed in ${ms} ms` };
     });
     return [...padding, ...bars];
   });

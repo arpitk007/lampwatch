@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertsApi, Channel, ChannelType } from '../../api/alerts-api';
 import { problemOf } from '../../api/monitor-api';
+import { Confirm } from '../../shared/confirm';
 import { timeAgo } from '../../shared/time';
 
 @Component({
@@ -13,6 +14,7 @@ import { timeAgo } from '../../shared/time';
 })
 export class AlertsPage {
   private readonly api = inject(AlertsApi);
+  private readonly confirm = inject(Confirm);
 
   protected readonly channels = signal<Channel[] | null>(null);
   protected readonly error = signal<string | null>(null);
@@ -60,8 +62,13 @@ export class AlertsPage {
     });
   }
 
-  protected remove(c: Channel): void {
-    if (!confirm(`Stop sending alerts to ${c.target}?`)) return;
+  protected async remove(c: Channel): Promise<void> {
+    const ok = await this.confirm.ask({
+      title: `Stop alerts to ${c.target}?`,
+      body: 'Outages and recoveries won’t be sent here any more. You can add it again later.',
+      confirmLabel: 'Remove channel',
+    });
+    if (!ok) return;
     this.api.remove(c.id).subscribe({
       next: () => this.load(),
       error: (e) => this.note(c.id, problemOf(e).detail ?? 'Couldn’t remove this channel.', false),

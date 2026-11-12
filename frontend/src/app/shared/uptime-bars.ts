@@ -63,11 +63,18 @@ type Tone = 'full' | 'minor' | 'major' | 'none';
 })
 export class UptimeBars {
   readonly days = input.required<DayUptime[]>();
+  /** The service is down right now: today's rollup lags, so its bar shows the live outage instead of "no data". */
+  readonly downNow = input(false);
   protected readonly active = signal<number | null>(null);
 
-  protected readonly view = computed(() =>
-    this.days().map((d) => ({ date: d.date, tone: tone(d.uptime), label: `${dayLabel(d.date)}: ${uptimeLabel(d.uptime)}` })),
-  );
+  protected readonly view = computed(() => {
+    const days = this.days();
+    return days.map((d, i) =>
+      this.downNow() && i === days.length - 1
+        ? { date: d.date, tone: 'major' as Tone, label: `${dayLabel(d.date)}: down now` }
+        : { date: d.date, tone: tone(d.uptime), label: `${dayLabel(d.date)}: ${uptimeLabel(d.uptime)}` },
+    );
+  });
 
   protected readonly activeDay = computed(() => {
     const i = this.active();

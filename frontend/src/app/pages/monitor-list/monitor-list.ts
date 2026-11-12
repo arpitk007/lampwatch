@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { CheckResult, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
+import { secondsLabel, StatusRulesStore } from '../../api/status-rules';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
@@ -15,6 +16,8 @@ import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/t
 })
 export class MonitorList {
   private readonly api = inject(MonitorApi);
+  private readonly rulesStore = inject(StatusRulesStore);
+  protected readonly slowAfterMs = computed(() => this.rulesStore.get()?.slowAfterMs ?? null);
 
   protected readonly monitors = signal<Monitor[] | null>(null);
   protected readonly heartbeats = signal<Record<string, CheckResult[]>>({});
@@ -40,7 +43,7 @@ export class MonitorList {
       const names = (this.monitors() ?? []).filter((m) => !m.paused && m.status === 'DOWN').map((m) => m.name);
       return { tone: 'down', headline: `${plural(down, 'monitor is', 'monitors are')} down`, detail: names.join(', ') };
     }
-    if (slow > 0) return { tone: 'slow', headline: `${plural(slow, 'monitor is', 'monitors are')} slow`, detail: 'Responding, but slower than usual.' };
+    if (slow > 0) return { tone: 'slow', headline: `${plural(slow, 'monitor is', 'monitors are')} slow`, detail: this.slowAfterMs() ? `Passing, but taking over ${secondsLabel(this.slowAfterMs()!)} to respond.` : 'Passing, but responding slowly.' };
     if (up > 0) return { tone: 'up', headline: `All ${plural(up, 'monitor is', 'monitors are')} up`, detail: 'Every check in the last round passed.' };
     return { tone: 'waiting', headline: 'Waiting for the first checks', detail: 'Results appear here within a few seconds.' };
   });

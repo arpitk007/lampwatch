@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { StatusPageApi, StatusPageSettings } from '../../api/status-page-api';
+import { Confirm } from '../../shared/confirm';
 
 @Component({
   selector: 'app-status-settings',
@@ -15,6 +16,7 @@ import { StatusPageApi, StatusPageSettings } from '../../api/status-page-api';
 export class StatusSettings {
   private readonly api = inject(StatusPageApi);
   private readonly monitorsApi = inject(MonitorApi);
+  private readonly confirm = inject(Confirm);
 
   protected readonly origin = window.location.origin;
   protected readonly monitors = signal<Monitor[] | null>(null);
@@ -25,6 +27,11 @@ export class StatusSettings {
   protected readonly busy = signal(false);
   protected readonly message = signal<{ text: string; ok: boolean } | null>(null);
   protected readonly serverErrors = signal<Record<string, string>>({});
+
+  /** Unchecking a service that is down quietly hides the outage from visitors, so say so. */
+  protected readonly hiddenWhileDown = computed(() =>
+    (this.monitors() ?? []).filter((m) => m.status === 'DOWN' && !m.paused && !this.selected().includes(m.id)).map((m) => m.name),
+  );
 
   protected readonly form = inject(NonNullableFormBuilder).group({
     title: ['', [Validators.required, Validators.maxLength(80)]],
@@ -87,8 +94,14 @@ export class StatusSettings {
     });
   }
 
-  protected remove(): void {
-    if (!confirm('Take your status page offline? Anyone with the link will see “No status page here”.')) return;
+  protected async remove(): Promise<void> {
+    const slug = this.saved()?.slug;
+    const ok = await this.confirm.ask({
+      title: 'Take your status page offline?',
+      body: `Anyone visiting ${this.origin}/s/${slug} will see “No status page here” until you publish again.`,
+      confirmLabel: 'Take offline',
+    });
+    if (!ok) return;
     this.api.remove().subscribe({
       next: () => {
         this.saved.set(null);

@@ -49,7 +49,9 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
   font-weight: 400;
   cursor: pointer;
   &:hover { background: var(--paper); }
-  & + & { border-top: 0; }
+  & + & { border-top: 0; margin-top: -0.35rem; }
+  .choice-name { flex: 1; }
+  .choice-state { font-size: var(--text-sm); font-weight: 500; color: var(--down); }
   &:first-of-type { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
   &:last-of-type { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
 }
@@ -65,6 +67,30 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
 
   .button.primary { margin-left: auto; }
   p { margin: 0; }
+}
+
+.warn {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--slow-mark) 45%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--slow-soft);
+  color: var(--slow);
+  font-size: var(--text-md);
+}
+
+.panel.danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+  padding: var(--space-5);
+  border-color: var(--down-soft);
+
+  h2 { margin: 0; font-size: var(--text-base); }
+  p { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--text-md); overflow-wrap: anywhere; }
+  @media (max-width: 640px) { flex-direction: column; align-items: stretch; }
 }
 
 .error { margin: 0; color: var(--down); font-size: var(--text-sm); font-weight: 500; }
