@@ -21,6 +21,13 @@ export class AuthPage {
 
   protected readonly isSignUp = computed(() => this.mode() === 'signup');
 
+  /** A still picture of the dashboard for the side panel: heights are response times, 'x' marks a failed check. */
+  protected readonly preview = [
+    { name: 'Storefront', state: 'up', label: 'Up', ms: '212 ms', beats: '5465556545664556545565455645' },
+    { name: 'Checkout API', state: 'down', label: 'Down', ms: '–', beats: '5565465556456554xxxxxxxxxxxx' },
+    { name: 'Docs', state: 'up', label: 'Up', ms: '148 ms', beats: '4445444544454445444544454445' },
+  ].map((row) => ({ ...row, bars: [...row.beats].map((b, i) => ({ x: i * 9, fail: b === 'x', h: b === 'x' ? 22 : Number(b) * 3 + 4 })) }));
+
   protected readonly form = inject(NonNullableFormBuilder).group({
     email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
     password: ['', [Validators.required]],

@@ -1,19 +1,14 @@
-<a class="back" routerLink="/">All monitors</a>
+<a class="back" routerLink="/">Monitors</a>
 
 @if (error(); as message) {
   <p class="notice" role="alert">{{ message }}</p>
 }
 
 @if (monitor(); as m) {
-  <header class="head">
+  <header class="page-head head">
     <div class="title">
       <h1>{{ m.name }}</h1>
       <a class="url" [href]="m.url" target="_blank" rel="noopener noreferrer">{{ m.url }}</a>
-      <p class="meta">
-        <app-status-badge [status]="m.status" [paused]="m.paused" />
-        <span>Checked {{ timeAgo(m.lastCheckedAt, now()) }}, {{ intervalLabel(m.intervalSeconds) }}</span>
-        @if (m.checkType === 'KEYWORD') { <span>Looks for “{{ m.keyword }}”</span> }
-      </p>
     </div>
     <div class="actions">
       <button class="button" type="button" (click)="togglePause(m)" [disabled]="busy()">
@@ -24,51 +19,80 @@
     </div>
   </header>
 
-  <section class="pulse" aria-labelledby="pulse-title">
-    <div class="pulse-head">
-      <h2 id="pulse-title">Last {{ checks().length || 90 }} checks</h2>
-      @if (stats(); as s) {
-        <p class="stats">
-          <span><strong>{{ s.uptime }}%</strong> passed</span>
-          @if (s.average !== null) { <span><strong>{{ s.average }} ms</strong> average response</span> }
-        </p>
-      }
+  <section class="panel" aria-labelledby="pulse-title">
+    <h2 id="pulse-title" class="visually-hidden">Current state</h2>
+    <dl class="facts" [class]="'facts ' + (m.paused ? 'paused' : m.status.toLowerCase())">
+      <div class="fact state">
+        <dt>Status</dt>
+        <dd>
+          <app-status-badge [status]="m.status" [paused]="m.paused" />
+          <span class="sub">
+            @if (m.downSince && !m.paused) { for {{ lasted({ startedAt: m.downSince, resolvedAt: null }) }} }
+            @else { checked {{ timeAgo(m.lastCheckedAt, now()) }} }
+          </span>
+        </dd>
+      </div>
+      <div class="fact">
+        <dt>Passed</dt>
+        <dd><span class="big">{{ stats()?.uptime ?? '–' }}<small>%</small></span><span class="sub">of the last {{ stats()?.count ?? 0 }} checks</span></dd>
+      </div>
+      <div class="fact">
+        <dt>Average response</dt>
+        <dd>
+          <span class="big">{{ stats()?.average ?? '–' }}<small> ms</small></span>
+          @if (stats()?.fastest != null) { <span class="sub">{{ stats()!.fastest }}–{{ stats()!.slowest }} ms range</span> }
+        </dd>
+      </div>
+      <div class="fact">
+        <dt>Checked</dt>
+        <dd>
+          <span class="big small-big">{{ intervalLabel(m.intervalSeconds) }}</span>
+          <span class="sub">{{ m.checkType === 'KEYWORD' ? 'looks for “' + m.keyword + '”' : 'any 2xx or 3xx counts as up' }}</span>
+        </dd>
+      </div>
+    </dl>
+    <div class="strip">
+      <app-heartbeat-strip [checks]="oldestFirst()" [slots]="90" [height]="56" [interactive]="true" />
+      <div class="strip-axis"><span>{{ checks().length || 90 }} checks ago</span><span>Now</span></div>
     </div>
-    <app-heartbeat-strip [checks]="oldestFirst()" [slots]="90" [height]="72" [interactive]="true" />
-    @if (updatedAt(); as at) { <p class="updated">Updated {{ clockTime(at) }}. Refreshes every 15 seconds.</p> }
   </section>
 
-  <section class="chart" aria-labelledby="chart-title">
-    <div class="chart-head">
+  <section class="panel" aria-labelledby="chart-title">
+    <div class="panel-head">
       <h2 id="chart-title">Response time</h2>
       <div class="range" role="group" aria-label="Time range">
         <button type="button" [attr.aria-pressed]="range() === 24" (click)="setRange(24)">24 hours</button>
         <button type="button" [attr.aria-pressed]="range() === 168" (click)="setRange(168)">7 days</button>
       </div>
     </div>
-    <app-response-chart [points]="hourly()" [hours]="range()" />
-    <p class="chart-note">Hourly average of successful checks. Red ticks mark hours with failed checks.</p>
-    <details>
-      <summary>Hourly table</summary>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th scope="col">Hour</th><th scope="col" class="num">Average</th><th scope="col" class="num">Checks</th><th scope="col" class="num">Failed</th></tr></thead>
-          <tbody>
-            @for (p of hourly(); track p.hour) {
-              <tr><td>{{ hourLabel(p) }}</td><td class="num">{{ p.avgMs === null ? '–' : p.avgMs + ' ms' }}</td><td class="num">{{ p.checks }}</td><td class="num">{{ p.failures }}</td></tr>
-            } @empty {
-              <tr><td colspan="4">No checks in this range yet.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </details>
+    <div class="panel-body chart">
+      <app-response-chart [points]="hourly()" [hours]="range()" />
+      <p class="chart-note">Hourly average of successful checks. Red ticks mark hours with failed checks.</p>
+      <details>
+        <summary>Show as table</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Hour</th><th scope="col" class="num">Average</th><th scope="col" class="num">Checks</th><th scope="col" class="num">Failed</th></tr></thead>
+            <tbody>
+              @for (p of hourly(); track p.hour) {
+                <tr><td>{{ hourLabel(p) }}</td><td class="num">{{ p.avgMs === null ? '–' : p.avgMs + ' ms' }}</td><td class="num">{{ p.checks }}</td><td class="num">{{ p.failures }}</td></tr>
+              } @empty {
+                <tr><td colspan="4">No checks in this range yet.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
   </section>
 
-  <section class="incidents" aria-labelledby="incidents-title">
-    <h2 id="incidents-title">Incidents</h2>
+  <section class="panel" aria-labelledby="incidents-title">
+    <div class="panel-head">
+      <h2 id="incidents-title">Incidents</h2>
+      <span class="meta">Opens after 3 failed checks in a row, closes after 2 passes</span>
+    </div>
     @if (incidents().length === 0) {
-      <p class="muted">No outages recorded. An incident opens after 3 failed checks in a row and closes after 2 passes in a row.</p>
+      <p class="panel-body muted">No outages recorded.</p>
     } @else {
       <ul class="incident-list">
         @for (i of incidents(); track i.id) {
@@ -82,18 +106,21 @@
     }
   </section>
 
-  <section aria-labelledby="history-title">
-    <h2 id="history-title">History</h2>
+  <section class="panel" aria-labelledby="history-title">
+    <div class="panel-head">
+      <h2 id="history-title">Check history</h2>
+      @if (updatedAt(); as at) { <span class="meta">Updated {{ clockTime(at) }}</span> }
+    </div>
     @if (checks().length === 0) {
-      <p class="muted">No checks yet. The first one runs within a few seconds of adding or resuming a monitor.</p>
+      <p class="panel-body muted">No checks yet. The first one runs within a few seconds of adding or resuming a monitor.</p>
     } @else {
       <div class="table-wrap">
-        <table>
+        <table class="history">
           <thead>
             <tr><th scope="col">Time</th><th scope="col">Result</th><th scope="col" class="num">HTTP</th><th scope="col" class="num">Response</th><th scope="col">Details</th></tr>
           </thead>
           <tbody>
-            @for (c of checks(); track c.checkedAt) {
+            @for (c of shownChecks(); track c.checkedAt) {
               <tr [class.failed]="!c.success">
                 <td>{{ timeAgo(c.checkedAt, now()) }}</td>
                 <td><span class="result">{{ c.success ? 'Passed' : 'Failed' }}</span></td>
@@ -105,6 +132,12 @@
           </tbody>
         </table>
       </div>
+      @if (checks().length > historyLimit()) {
+        <div class="more">
+          <button class="button" type="button" (click)="historyLimit.set(historyLimit() + 30)">Show 30 more</button>
+          <span class="meta">Showing {{ shownChecks().length }} of {{ checks().length }}</span>
+        </div>
+      }
     }
   </section>
 } @else if (!error()) {

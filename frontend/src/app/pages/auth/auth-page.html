@@ -1,3 +1,30 @@
+<div class="split">
+<aside class="story" aria-hidden="true">
+  <a class="brand" routerLink="/" tabindex="-1">
+    <svg viewBox="0 0 24 24"><path d="M2 13h4l2-6 4 12 3-8 2 2h5" /></svg>
+    Uptime
+  </a>
+  <div class="story-main">
+    <p class="pitch">Know your site is down before your users tell you.</p>
+    <p class="pitch-sub">Checks every minute from outside your network. Email or Telegram the moment something breaks, and a public status page for your users.</p>
+    <div class="preview">
+      @for (row of preview; track row.name) {
+        <div class="preview-row" [class.down]="row.state === 'down'">
+          <span class="p-name">{{ row.name }}</span>
+          <svg class="p-bars" viewBox="0 0 252 24" preserveAspectRatio="none">
+            @for (b of row.bars; track b.x) {
+              <rect [attr.x]="b.x" [attr.y]="24 - b.h" width="6" [attr.height]="b.h" rx="1.5" [class.fail]="b.fail" />
+            }
+          </svg>
+          <span class="p-state">{{ row.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</aside>
+
+<section class="form-side">
+<div class="form-box">
 <h1>{{ isSignUp() ? 'Create your account' : 'Sign in' }}</h1>
 <p class="lede">
   @if (isSignUp()) {
@@ -39,3 +66,6 @@
     New here? <a routerLink="/signup" [queryParams]="{ next: next() }">Create an account</a>
   }
 </p>
+</div>
+</section>
+</div>

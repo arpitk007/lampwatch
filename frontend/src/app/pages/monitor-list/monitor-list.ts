@@ -28,8 +28,24 @@ export class MonitorList {
       up: active.filter((m) => m.status === 'UP').length,
       slow: active.filter((m) => m.status === 'DEGRADED').length,
       down: active.filter((m) => m.status === 'DOWN').length,
+      paused: list.length - active.length,
     };
   });
+
+  /** The single answer the page leads with: is anything broken right now? */
+  protected readonly overall = computed(() => {
+    const { up, slow, down } = this.counts();
+    const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+    if (down > 0) {
+      const names = (this.monitors() ?? []).filter((m) => !m.paused && m.status === 'DOWN').map((m) => m.name);
+      return { tone: 'down', headline: `${plural(down, 'monitor is', 'monitors are')} down`, detail: names.join(', ') };
+    }
+    if (slow > 0) return { tone: 'slow', headline: `${plural(slow, 'monitor is', 'monitors are')} slow`, detail: 'Responding, but slower than usual.' };
+    if (up > 0) return { tone: 'up', headline: `All ${plural(up, 'monitor is', 'monitors are')} up`, detail: 'Every check in the last round passed.' };
+    return { tone: 'waiting', headline: 'Waiting for the first checks', detail: 'Results appear here within a few seconds.' };
+  });
+
+  protected readonly emptyBars = Array.from({ length: 15 }, (_, i) => i);
 
   protected readonly timeAgo = timeAgo;
   protected readonly intervalLabel = intervalLabel;

@@ -1,20 +1,13 @@
-<header class="head">
+<header class="page-head">
   <div>
     <h1>Monitors</h1>
-    @if (monitors(); as list) {
-      @if (list.length > 0) {
-        <p class="summary">
-          <span class="up">{{ counts().up }} up</span>,
-          @if (counts().slow > 0) { <span class="slow">{{ counts().slow }} slow</span>, }
-          <span [class.down]="counts().down > 0">{{ counts().down }} down</span>
-          @if (updatedAt(); as at) {
-            <span class="updated">Updated {{ clockTime(at) }}</span>
-          }
-        </p>
-      }
+    @if (updatedAt(); as at) {
+      <p class="lede">Refreshes every 15 seconds. Last update {{ clockTime(at) }}.</p>
     }
   </div>
-  <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+  <div class="actions">
+    <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+  </div>
 </header>
 
 @if (error(); as message) {
@@ -23,33 +16,65 @@
 
 @if (monitors(); as list) {
   @if (list.length === 0) {
-    <section class="empty">
-      <h2>No monitors yet</h2>
-      <p>Add the first site you want to watch. It gets checked within a few seconds, then on the schedule you pick.</p>
+    <section class="panel empty">
+      <svg viewBox="0 0 120 32" aria-hidden="true">
+        @for (i of emptyBars; track i) { <rect [attr.x]="i * 8" y="6" width="6" height="20" rx="1.5" /> }
+      </svg>
+      <h2>Watch your first site</h2>
+      <p>Paste a URL and we check it within a few seconds, then on the schedule you pick. You get an alert the moment it stops answering.</p>
       <a class="button primary" routerLink="/monitors/new">Add monitor</a>
     </section>
   } @else {
-    <ul class="rows">
-      @for (m of list; track m.id) {
-        <li>
-          <a class="row" [routerLink]="['/monitors', m.id]" [class.is-down]="m.status === 'DOWN' && !m.paused">
-            <span class="who">
-              <span class="name">{{ m.name }}</span>
-              <span class="url">{{ m.url }}</span>
-            </span>
-            <span class="state">
-              <app-status-badge [status]="m.status" [paused]="m.paused" />
-              @if (m.downSince && !m.paused) { <span class="since">for {{ downFor(m.downSince) }}</span> }
-            </span>
-            <app-heartbeat-strip class="beats" [checks]="beatsFor(m.id)" [slots]="30" [height]="28" />
-            <span class="numbers">
-              <span class="ms">{{ latestMs(m.id) !== null ? latestMs(m.id) + ' ms' : '–' }}</span>
-              <span class="when">{{ timeAgo(m.lastCheckedAt, now()) }}, {{ intervalLabel(m.intervalSeconds) }}</span>
-            </span>
-          </a>
-        </li>
-      }
-    </ul>
+    <section class="band" [class]="'band ' + overall().tone" aria-live="polite">
+      <svg class="band-mark" viewBox="0 0 12 12" aria-hidden="true">
+        @switch (overall().tone) {
+          @case ('down') { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+          @case ('slow') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
+          @default { <circle cx="6" cy="6" r="5" /> }
+        }
+      </svg>
+      <div class="band-text">
+        <p class="headline">{{ overall().headline }}</p>
+        <p class="detail">{{ overall().detail }}</p>
+      </div>
+      <dl class="tally">
+        <div><dt>Up</dt><dd>{{ counts().up }}</dd></div>
+        <div><dt>Slow</dt><dd>{{ counts().slow }}</dd></div>
+        <div><dt>Down</dt><dd [class.hot]="counts().down > 0">{{ counts().down }}</dd></div>
+        @if (counts().paused > 0) { <div><dt>Paused</dt><dd>{{ counts().paused }}</dd></div> }
+      </dl>
+    </section>
+
+    <section class="panel">
+      <div class="cols" aria-hidden="true">
+        <span>Monitor</span>
+        <span>Status</span>
+        <span>Last 30 checks</span>
+        <span class="right">Response</span>
+      </div>
+      <ul class="rows">
+        @for (m of list; track m.id) {
+          <li>
+            <a class="row" [routerLink]="['/monitors', m.id]" [class.is-down]="m.status === 'DOWN' && !m.paused" [class.is-paused]="m.paused">
+              <span class="who">
+                <span class="name">{{ m.name }}</span>
+                <span class="url">{{ m.url }}</span>
+              </span>
+              <span class="state">
+                <app-status-badge [status]="m.status" [paused]="m.paused" />
+                @if (m.downSince && !m.paused) { <span class="since">for {{ downFor(m.downSince) }}</span> }
+                @else { <span class="when">{{ timeAgo(m.lastCheckedAt, now()) }}</span> }
+              </span>
+              <app-heartbeat-strip class="beats" [checks]="beatsFor(m.id)" [slots]="30" [height]="24" />
+              <span class="numbers">
+                <span class="ms">{{ latestMs(m.id) !== null ? latestMs(m.id) + ' ms' : '–' }}</span>
+                <span class="when">{{ intervalLabel(m.intervalSeconds) }}</span>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
   }
 } @else if (!error()) {
   <p class="loading">Loading monitors…</p>

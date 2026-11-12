@@ -1,7 +1,13 @@
-<a class="back" [routerLink]="editing() ? ['/monitors', id()] : ['/']">Back</a>
-<h1>{{ editing() ? 'Edit monitor' : 'Add monitor' }}</h1>
+<a class="back" [routerLink]="editing() ? ['/monitors', id()] : ['/']">{{ editing() ? 'Monitor' : 'Monitors' }}</a>
+<header class="page-head">
+  <div>
+    <h1>{{ editing() ? 'Edit monitor' : 'Add monitor' }}</h1>
+    <p class="lede">{{ editing() ? 'Changes apply from the next check.' : 'The first check runs within a few seconds of saving.' }}</p>
+  </div>
+</header>
 
-<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+<form class="panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <div class="section">
   <div class="field">
     <label for="name">Name</label>
     <input id="name" formControlName="name" autocomplete="off" placeholder="Portfolio site"
@@ -16,6 +22,9 @@
     @if (fieldError('url'); as e) { <p class="error" id="url-error">{{ e }}</p> }
   </div>
 
+  </div>
+
+  <div class="section">
   <fieldset class="field">
     <legend>Counts as up when</legend>
     <label class="choice">
@@ -38,6 +47,9 @@
     </div>
   }
 
+  </div>
+
+  <div class="section">
   <div class="pair">
     <div class="field">
       <label for="interval">Check</label>
@@ -53,12 +65,14 @@
     </div>
   </div>
 
-  @if (formError(); as e) { <p class="notice" role="alert">{{ e }}</p> }
+  </div>
 
-  <div class="actions">
+  @if (formError(); as e) { <div class="section"><p class="notice" role="alert">{{ e }}</p></div> }
+
+  <div class="foot">
+    <a class="button" [routerLink]="editing() ? ['/monitors', id()] : ['/']">Cancel</a>
     <button class="button primary" type="submit" [disabled]="saving()">
       {{ saving() ? 'Saving…' : editing() ? 'Save changes' : 'Add monitor' }}
     </button>
-    <a class="button" [routerLink]="editing() ? ['/monitors', id()] : ['/']">Cancel</a>
   </div>
 </form>

@@ -1,15 +1,28 @@
-<h1>Alerts</h1>
-<p class="lede">When a monitor goes down, and again when it’s back, every channel below gets a message.</p>
+<header class="page-head">
+  <div>
+    <h1>Alerts</h1>
+    <p class="lede">When a monitor goes down, and again when it’s back, every channel below gets a message.</p>
+  </div>
+</header>
 
 @if (error(); as message) { <p class="notice" role="alert">{{ message }}</p> }
 
+<section class="panel" aria-labelledby="channels-title">
+<div class="panel-head"><h2 id="channels-title">Channels</h2></div>
 @if (channels(); as list) {
   @if (list.length === 0) {
-    <p class="muted">No channels yet, so outages won’t reach you. Add one below.</p>
+    <p class="panel-body muted">No channels yet, so outages won’t reach you. Add one below.</p>
   } @else {
     <ul class="channels">
       @for (c of list; track c.id) {
         <li>
+          <span class="icon" aria-hidden="true">
+            @if (c.type === 'TELEGRAM') {
+              <svg viewBox="0 0 20 20"><path d="M17.5 3.5 2.5 9.3l4.8 1.8 1.8 5.4 2.7-3.1 4 3 1.7-12.9zM7.3 11.1l8-5.9-6.2 7.4" /></svg>
+            } @else {
+              <svg viewBox="0 0 20 20"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5" /><path d="m3 5.5 7 5.5 7-5.5" /></svg>
+            }
+          </span>
           <div class="who">
             <span class="type">{{ typeLabel[c.type] }}</span>
             <span class="target">{{ c.target }}</span>
@@ -25,12 +38,13 @@
     </ul>
   }
 } @else if (!error()) {
-  <p class="muted">Loading…</p>
+  <p class="panel-body muted">Loading…</p>
 }
+</section>
 
-<section class="add" aria-labelledby="add-title">
-  <h2 id="add-title">Add a channel</h2>
-  <form [formGroup]="form" (ngSubmit)="add()" novalidate>
+<section class="panel" aria-labelledby="add-title">
+  <div class="panel-head"><h2 id="add-title">Add a channel</h2></div>
+  <form class="panel-body" [formGroup]="form" (ngSubmit)="add()" novalidate>
     <fieldset class="types">
       <legend>Send to</legend>
       <label class="choice"><input type="radio" formControlName="type" value="EMAIL" /> Email</label>

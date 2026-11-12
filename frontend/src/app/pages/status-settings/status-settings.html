@@ -1,14 +1,23 @@
-<h1>Status page</h1>
-<p class="lede">A public page your users can check during an outage. It shows each service’s status and 30 days of uptime, never your URLs or error details.</p>
+<header class="page-head">
+  <div>
+    <h1>Status page</h1>
+    <p class="lede">A public page your users can check during an outage. It shows each service’s status and 30 days of uptime, never your URLs or error details.</p>
+  </div>
+  @if (saved(); as page) {
+    <div class="actions"><a class="button" [routerLink]="['/s', page.slug]" target="_blank">View live page</a></div>
+  }
+</header>
 
 @if (saved(); as page) {
   <p class="live">
-    Live at <a [routerLink]="['/s', page.slug]">{{ origin }}/s/{{ page.slug }}</a>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span>Published at <a [routerLink]="['/s', page.slug]">{{ origin }}/s/{{ page.slug }}</a></span>
   </p>
 }
 
 @if (monitors(); as list) {
-  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <form class="panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="section">
     <div class="field">
       <label for="title">Title</label>
       <input id="title" formControlName="title" placeholder="Acme status" autocomplete="off" />
@@ -24,6 +33,9 @@
       @if (slugError(); as e) { <p class="error" id="slug-error">{{ e }}</p> }
     </div>
 
+    </div>
+
+    <div class="section">
     <fieldset class="field">
       <legend>Services to show</legend>
       @if (list.length === 0) {
@@ -37,11 +49,12 @@
       }
     </fieldset>
 
-    @if (message(); as m) { <p [class]="m.ok ? 'ok' : 'notice'" role="status">{{ m.text }}</p> }
+    </div>
 
-    <div class="actions">
+    <div class="foot">
+      @if (saved()) { <button class="button danger" type="button" (click)="remove()">Take offline</button> }
+      @if (message(); as m) { <p [class]="m.ok ? 'ok' : 'notice'" role="status">{{ m.text }}</p> }
       <button class="button primary" type="submit" [disabled]="busy()">{{ busy() ? 'Saving…' : saved() ? 'Save changes' : 'Publish page' }}</button>
-      @if (saved()) { <button class="button quiet" type="button" (click)="remove()">Take offline</button> }
     </div>
   </form>
 } @else {

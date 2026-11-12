@@ -32,6 +32,8 @@ export class MonitorDetail implements OnInit {
   protected readonly updatedAt = signal<Date | null>(null);
 
   protected readonly oldestFirst = computed(() => [...this.checks()].reverse());
+  protected readonly historyLimit = signal(15);
+  protected readonly shownChecks = computed(() => this.checks().slice(0, this.historyLimit()));
   protected readonly stats = computed(() => {
     const checks = this.checks();
     if (checks.length === 0) return null;
@@ -41,6 +43,8 @@ export class MonitorDetail implements OnInit {
       uptime: ((passed.length / checks.length) * 100).toFixed(passed.length === checks.length ? 0 : 1),
       average: times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null,
       count: checks.length,
+      fastest: times.length ? Math.min(...times) : null,
+      slowest: times.length ? Math.max(...times) : null,
     };
   });
 
@@ -48,7 +52,7 @@ export class MonitorDetail implements OnInit {
   protected readonly intervalLabel = intervalLabel;
   protected readonly clockTime = clockTime;
 
-  protected lasted(i: Incident): string {
+  protected lasted(i: Pick<Incident, 'startedAt' | 'resolvedAt'>): string {
     return durationLabel((i.resolvedAt ? Date.parse(i.resolvedAt) : this.now()) - Date.parse(i.startedAt));
   }
 

@@ -1,21 +1,39 @@
 <a class="skip" href="#main">Skip to content</a>
-<header class="bar">
-  <a class="brand" routerLink="/">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-6 4 12 3-8 2 2h5" /></svg>
-    Uptime
-  </a>
-  @if (auth.user(); as user) {
-    <nav class="nav" aria-label="Main">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Monitors</a>
-      <a routerLink="/alerts" routerLinkActive="active">Alerts</a>
-      <a routerLink="/status-page" routerLinkActive="active">Status page</a>
-    </nav>
-    <div class="account">
-      <span class="email">{{ user.email }}</span>
-      <button class="button quiet" type="button" (click)="signOut()">Sign out</button>
-    </div>
-  }
-</header>
-<main id="main">
-  <router-outlet />
-</main>
+@if (showShell()) {
+  <div class="shell">
+    <aside class="rail-col"><div class="rail">
+      <a class="brand" routerLink="/">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-6 4 12 3-8 2 2h5" /></svg>
+        Uptime
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
+          Monitors
+        </a>
+        <a routerLink="/alerts" routerLinkActive="active">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3a5 5 0 0 0-5 5v3l-1.5 3h13L15 11V8a5 5 0 0 0-5-5zM8 16.5a2 2 0 0 0 4 0" /></svg>
+          Alerts
+        </a>
+        <a routerLink="/status-page" routerLinkActive="active">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M3 10h14M10 3c2 2.2 2.8 4.6 2.8 7s-.8 4.8-2.8 7c-2-2.2-2.8-4.6-2.8-7S8 5.2 10 3z" /></svg>
+          Status page
+        </a>
+      </nav>
+      @if (auth.user(); as user) {
+        <div class="account">
+          <span class="avatar" aria-hidden="true">{{ user.email[0] }}</span>
+          <span class="email" [title]="user.email">{{ user.email }}</span>
+          <button class="signout" type="button" (click)="signOut()">Sign out</button>
+        </div>
+      }
+    </div></aside>
+    <main id="main" class="content">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
+  <main id="main">
+    <router-outlet />
+  </main>
+}

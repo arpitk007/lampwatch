@@ -9,76 +9,126 @@
   &:focus { top: 0.75rem; }
 }
 
-.bar {
+.shell {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.rail-col { background: var(--rail-bg); }
+
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: var(--space-5) var(--space-6);
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-3);
+  background: var(--rail-bg);
+  color: var(--rail-ink);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 44px;
-  font-weight: 700;
+  padding: 0 var(--space-3);
+  min-height: 40px;
+  font-weight: 600;
   font-size: var(--text-lg);
-  color: var(--ink);
+  color: var(--rail-ink-strong);
   text-decoration: none;
 
-  svg { width: 1.5rem; height: 1.5rem; fill: none; stroke: var(--up); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  svg { width: 1.375rem; height: 1.375rem; fill: none; stroke: #3ccf91; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 }
 
 .nav {
-  display: flex;
-  gap: var(--space-1);
-  margin-right: auto;
-  margin-left: var(--space-6);
+  display: grid;
+  gap: 2px;
 
   a {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    min-height: 44px;
+    gap: var(--space-3);
+    min-height: 38px;
     padding: 0 var(--space-3);
-    color: var(--muted);
+    border-radius: var(--radius-sm);
+    color: var(--rail-ink);
+    font-size: var(--text-md);
+    font-weight: 500;
     text-decoration: none;
-    font-weight: 600;
-    border-radius: 4px;
+    white-space: nowrap;
   }
-  a:hover { color: var(--ink); }
-  a { white-space: nowrap; }
-  a.active { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); border-radius: 0; }
+  a:hover { background: var(--rail-hover); color: var(--rail-ink-strong); }
+  a.active { background: var(--rail-hover); color: var(--rail-ink-strong); }
+  svg { width: 1.125rem; height: 1.125rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 }
 
 .account {
-  display: flex;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-4) var(--space-3) 0;
+  border-top: 1px solid var(--rail-line);
+}
+
+.avatar {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--navy-600);
+  color: var(--rail-ink-strong);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .email {
-  color: var(--muted);
   font-size: var(--text-sm);
+  color: var(--rail-ink-strong);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-main {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-6) var(--space-16);
+.signout {
+  justify-self: start;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--rail-ink);
+  cursor: pointer;
+  &:hover { color: var(--rail-ink-strong); text-decoration: underline; }
 }
 
-@media (max-width: 520px) {
-  .bar, main { padding-left: var(--space-4); padding-right: var(--space-4); }
-  .email { display: none; }
-  .bar { flex-wrap: wrap; row-gap: 0; }
-  .nav { order: 3; width: 100%; margin: 0 0 0 calc(-1 * var(--space-2)); overflow-x: auto; }
-  .nav a { padding: 0 var(--space-2); white-space: nowrap; }
-  .account .button { padding: 0 var(--space-2); }
+.content {
+  width: 100%;
+  max-width: 72rem;
+  padding: var(--space-8) var(--space-10) var(--space-16);
+}
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-2) var(--space-4);
+  }
+  .brand { padding: 0; }
+  .nav { order: 3; width: 100%; display: flex; overflow-x: auto; margin: 0 calc(-1 * var(--space-3)); }
+  .nav svg { display: none; }
+  .account { margin: 0 0 0 auto; padding: 0; border: 0; display: flex; }
+  .avatar, .email { display: none; }
+  .content { padding: var(--space-5) var(--space-4) var(--space-12); }
 }
