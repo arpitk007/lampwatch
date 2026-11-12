@@ -31,6 +31,8 @@ Status is never shown by color alone: badges pair a shape with a word, and faile
 - Wrong password and unknown email get the same answer, so sign-in doesn't reveal which emails have accounts.
 - Every monitor query is scoped to its owner. Another user's monitor returns `404`, the same as a missing one.
 - Each account can have up to 20 monitors (`uptime.max-monitors-per-user`).
+- Every `/api/**` request is rate limited in Redis with fixed one-minute windows: 300 per signed-in user, 120 per IP for anonymous calls (status pages, sign-in, sign-up), and 5 new accounts per IP per hour. Over budget returns `429` with `Retry-After`. The counters are shared by every instance, and if Redis is unreachable the limiter lets requests through (`uptime.rate-limit.*`).
+- Behind Caddy, `server.forward-headers-strategy=native` makes Tomcat take the client address from `X-Forwarded-For`, but only when the request comes from a private-network proxy. Without it every visitor would share Caddy's address, and 30 failed sign-ins from anyone would lock sign-in for everyone.
 
 ## API
 
@@ -77,7 +79,7 @@ All `/api/monitors` endpoints need a signed-in session.
 1. Every 5 seconds the scheduler claims due monitors with `SELECT … FOR UPDATE SKIP LOCKED` and moves each one's `next_check_at` forward in the same transaction (a lease), so several instances never claim the same monitor.
 2. It puts one message per monitor on the `checks` Redis Stream. It never runs checks itself, so a slow website can't delay scheduling.
 3. Workers in the `checkers` consumer group read one message at a time. Redis gives each message to exactly one worker, and it stays pending until the worker acknowledges it.
-4. The worker runs the `Checker` for the monitor's type, stores the result and updates the status in one transaction, then acknowledges. A monitor turns `DOWN` after 3 failures in a row and `UP` after one success.
+4. The worker runs the `Checker` for the monitor's type, stores the result and updates the status in one transaction, then acknowledges. A monitor turns `DOWN` after 3 failures in a row and back `UP` after 2 passes (`GET /api/settings/status-rules` reports the thresholds).
 5. Delivery is at-least-once. Each result stores the stream message id in a unique `job_id` column and is written with `INSERT IGNORE`, so a redelivered message is recorded once.
 6. If a worker dies mid-check, its message stays pending. The reclaimer claims messages idle for over 60 seconds and runs them again. After 3 deliveries a message goes to the `checks:dead` stream with the reason, so one bad message can't loop forever.
 7. Messages older than 5 minutes are dropped rather than checked late; the next scheduler tick sends a fresh one.
@@ -140,6 +142,28 @@ Anyone can sign up and enter a URL, and the checker fetches it from inside the s
 ## Response time chart
 
 The monitor page charts the hourly average response time of successful checks for the last 24 hours or 7 days, read from the hourly rollups. Hours without checks break the line instead of being bridged, hours with failures get a red tick plus text in the tooltip, and the crosshair works with the mouse or the arrow keys. An hourly table gives the same numbers without the chart.
+
+## Load tests
+
+Two scripts in `loadtest/`, no dependencies beyond Node 18+. Numbers below are from one 4-core desktop running the app, MySQL, Redis and the load generator together, so they are a floor, and runs vary by about ±40%.
+
+**API** (`api-load.mjs`): 50 signed-in users, 50 concurrent clients with no think time, each loading the monitor list, the heartbeats and a public status page.
+
+| | Requests/s (all three) | p95 | Errors |
+|---|---|---|---|
+| Typical warm run | 300–350 | 200–270 ms | 0 |
+
+The app is CPU-bound (about 2.2 of 4 cores busy while MySQL ran 2–3 queries at a time), so the connection pool is not the limit. An open dashboard tab makes about 8 requests a minute, so one core serves roughly 1,000 open tabs. The rate limiter's cost (one Redis `INCR` per request) was below the run-to-run noise.
+
+**Check pipeline** (`pipeline-load.mjs`): 1,000 monitors on a 1-minute interval against a local site that answers after a fixed delay.
+
+| Workers per instance | Site delay | Checks/min done | Needed | Queue |
+|---|---|---|---|---|
+| 8 | 50 ms | 1,000 | 1,000 | drained every minute |
+| 8 | 500 ms | 768 | 1,000 | grew without limit (1,372 after 4 min) |
+| 32 | 500 ms | 1,000 | 1,000 | drained every minute |
+
+Workers block on one check at a time, so throughput is about workers ÷ (site time + ~70 ms of recording). With 8 workers, slow sites made checks fall behind silently: the scheduler kept enqueueing on time, the queue grew, and checks older than 5 minutes were dropped. The default is now 32 workers (`uptime.worker-threads`) and a 20-connection pool (`DB_POOL_SIZE`); a worker holds a connection only while it records a result. That is about 3,000 one-minute monitors per instance for sites answering in half a second, and more instances add workers through the same consumer group.
 
 ## Tests
 

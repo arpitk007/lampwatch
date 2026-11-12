@@ -7,8 +7,11 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record UptimeProperties(
         /** How many due monitors one scheduler tick claims. */
         @DefaultValue("50") int batchSize,
-        /** Stream consumers per instance; each runs one check at a time. */
-        @DefaultValue("8") int workerThreads,
+        /**
+         * Stream consumers per instance; each blocks on one check at a time, so throughput is about
+         * workerThreads / check duration. 8 managed 12.8 checks/s against 500 ms sites (768/min); see loadtest/.
+         */
+        @DefaultValue("32") int workerThreads,
         /** Pending checks idle this long are assumed lost (worker crashed) and reclaimed. */
         @DefaultValue("60000") long reclaimIdleMs,
         /** Deliveries before a check is moved to the dead-letter stream. */
@@ -25,7 +28,21 @@ public record UptimeProperties(
         @DefaultValue("1048576") int maxBodyBytes,
         /** Cap per account, since anyone can sign up on the public site. */
         @DefaultValue("20") int maxMonitorsPerUser,
-        @DefaultValue Alerts alerts) {
+        @DefaultValue Alerts alerts,
+        @DefaultValue RateLimit rateLimit) {
+
+    /**
+     * Request budgets per fixed window, counted in Redis so they hold across instances.
+     * @param perUserPerMinute   signed-in requests; an open dashboard tab uses about 8 a minute
+     * @param perIpPerMinute     anonymous requests (public status pages, sign-in, sign-up)
+     * @param signupsPerIpPerHour new accounts, each of which costs a bcrypt hash and up to 20 monitors
+     */
+    public record RateLimit(
+            @DefaultValue("true") boolean enabled,
+            @DefaultValue("300") int perUserPerMinute,
+            @DefaultValue("120") int perIpPerMinute,
+            @DefaultValue("5") int signupsPerIpPerHour) {
+    }
 
     /**
      * @param mailFrom          sender address for alert emails
