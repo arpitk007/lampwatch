@@ -1,16 +1,20 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { problemOf } from '../../api/monitor-api';
+import { StatusPageApi } from '../../api/status-page-api';
 import { Auth } from '../../auth/auth';
+import { Logo } from '../../shared/logo';
+import { ChartLight, LIGHT_FOR_STATUS, SeaChart } from '../../shared/sea-chart';
+import { DEMO_SLUG } from '../../config';
 
 @Component({
   selector: 'app-auth-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Logo, SeaChart],
   templateUrl: './auth-page.html',
   styleUrl: './auth-page.scss',
 })
-export class AuthPage {
+export class AuthPage implements OnInit {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
 
@@ -18,20 +22,35 @@ export class AuthPage {
   readonly mode = input<'signin' | 'signup'>('signin');
   /** From the query string: where to go after signing in. */
   readonly next = input<string | undefined>(undefined);
+  /** From the query string: the address typed on the homepage. */
+  readonly email = input<string | undefined>(undefined);
 
   protected readonly isSignUp = computed(() => this.mode() === 'signup');
 
-  /** A still picture of the dashboard for the side panel: heights are response times, 'x' marks a failed check. */
-  protected readonly preview = [
-    { name: 'Storefront', state: 'up', label: 'Up', ms: '212 ms', beats: '5465556545664556545565455645' },
-    { name: 'Checkout API', state: 'down', label: 'Down', ms: '–', beats: '5565465556456554xxxxxxxxxxxx' },
-    { name: 'Docs', state: 'up', label: 'Up', ms: '148 ms', beats: '4445444544454445444544454445' },
-  ].map((row) => ({ ...row, bars: [...row.beats].map((b, i) => ({ x: i * 9, fail: b === 'x', h: b === 'x' ? 22 : Number(b) * 3 + 4 })) }));
+  /** The side pane shows the live demo as a chart; it is illustration, so a failed load just leaves open water. */
+  protected readonly lights = signal<ChartLight[]>([]);
+  protected readonly caption = signal<string | null>(null);
 
   protected readonly form = inject(NonNullableFormBuilder).group({
     email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
     password: ['', [Validators.required]],
   });
+
+  constructor() {
+    inject(StatusPageApi).publicPage(DEMO_SLUG).subscribe({
+      next: (page) => {
+        this.lights.set(page.monitors.map((m) => ({ name: m.name, state: LIGHT_FOR_STATUS[m.status] })));
+        const down = page.monitors.filter((m) => m.status === 'DOWN').map((m) => m.name);
+        this.caption.set(down.length ? `Live from the demo: ${down.join(' and ')} ${down.length === 1 ? 'is' : 'are'} down right now.` : 'Live from the demo: every light is on.');
+      },
+      error: () => {},
+    });
+  }
+
+  ngOnInit(): void {
+    const email = this.email();
+    if (email) this.form.controls.email.setValue(email);
+  }
 
   protected readonly busy = signal(false);
   protected readonly formError = signal<string | null>(null);

@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 import { catchError, firstValueFrom, of, throwError } from 'rxjs';
 
 export interface User {
@@ -64,6 +64,9 @@ export const signedIn: CanActivateFn = async (_route, state) => {
   const user = await inject(Auth).ensureLoaded();
   return user ? true : router.createUrlTree(['/signin'], { queryParams: { next: state.url } });
 };
+
+/** Matches only for visitors who aren't signed in, so `/` can be the homepage for them and the monitor list for users. */
+export const guest: CanMatchFn = async () => !(await inject(Auth).ensureLoaded());
 
 /** Sign-in and sign-up pages. Signed-in users go straight to their monitors. */
 export const signedOut: CanActivateFn = async () => {

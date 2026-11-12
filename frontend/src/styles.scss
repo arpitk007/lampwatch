@@ -1,29 +1,32 @@
 :root {
-  /* Primitive: raw values, used only to define the layers below */
-  --navy-950: #0c1d2e;
-  --navy-900: #12293f;
-  --navy-800: #1b3651;
-  --navy-600: #3a5573;
-  --navy-300: #9fb2c7;
-  --gray-700: #3d4a5c;
-  --gray-500: #5d6b7e;
-  --gray-300: #c3ccd7;
-  --gray-200: #dfe4eb;
-  --gray-100: #edf0f4;
-  --gray-50: #f6f7f9;
+  /* Primitive: an Admiralty chart. Water whites and shallow-water tints, depth-contour blues, buff land,
+     navy ink, magenta for lights (Lampwatch's own colour), and real navigation-light colours for status. */
+  --ink-900: #0f2a3d;
+  --ink-800: #1a3c55;
+  --ink-600: #3a5a72;
+  --ink-300: #a9c2cf;
+  --slate-700: #2e4a5e;
+  --slate-500: #4f6475;
+  --water-50: #f3f7f9;
+  --water-100: #e6eff3;
+  --water-200: #d3e1e8;
+  --shallow: #d9e9f0;
+  --contour: #a8c8d6;
+  --land: #efe3b0;
+  --land-edge: #c9b779;
   --white: #ffffff;
-  --green-700: #12805c;
-  --green-50: #e8f5ef;
-  --amber-700: #8a5300;
-  --amber-500: #c98a00;
-  --amber-50: #fdf4e3;
-  --red-700: #b42318;
-  --red-900: #7a1b13;
-  --red-200: #f1b5ad;
-  --red-50: #fdecea;
-  --cobalt-600: #2454d3;
-  --cobalt-700: #1c43ad;
-  --cobalt-50: #eaf0fd;
+  --green-700: #0e7c55;
+  --green-50: #e6f4ee;
+  --amber-700: #8a5a00;
+  --amber-500: #d49a00;
+  --amber-50: #fdf3dc;
+  --red-700: #b3261e;
+  --red-900: #7a1a14;
+  --red-200: #f0b4ae;
+  --red-50: #fcebea;
+  --magenta-600: #b5156e;
+  --magenta-700: #8e0f56;
+  --magenta-50: #fbe7f1;
 
   /* Scales: type and spacing */
   --text-xs: 0.75rem;
@@ -47,19 +50,23 @@
   --radius-sm: 6px;
   --radius: 10px;
 
+  /* Type: area names in a hydrographic italic serif, everything else in a workhorse sans with tabular figures. */
+  --font-ui: 'Public Sans', system-ui, sans-serif;
+  --font-chart: 'Libre Caslon Text', Georgia, serif;
+
   /* Semantic: what a color is for */
-  --ink: var(--navy-950);
-  --ink-soft: var(--gray-700);
+  --ink: var(--ink-900);
+  --ink-soft: var(--slate-700);
   --on-ink: var(--white);
-  --paper: var(--gray-50);
+  --paper: var(--water-50);
   --surface: var(--white);
-  --surface-sunk: var(--gray-100);
-  --line: var(--gray-200);
-  --border-strong: var(--gray-300);
-  --muted: var(--gray-500);
-  --accent: var(--cobalt-600);
-  --accent-hover: var(--cobalt-700);
-  --accent-soft: var(--cobalt-50);
+  --surface-sunk: var(--water-100);
+  --line: var(--water-200);
+  --border-strong: var(--contour);
+  --muted: var(--slate-500);
+  --accent: var(--magenta-600);
+  --accent-hover: var(--magenta-700);
+  --accent-soft: var(--magenta-50);
   --up: var(--green-700);
   --up-soft: var(--green-50);
   --slow: var(--amber-700);
@@ -70,14 +77,14 @@
   --down-soft: var(--red-200);
   --danger-bg: var(--red-50);
   --danger-ink: var(--red-900);
-  --focus: var(--cobalt-600);
+  --focus: var(--magenta-600);
 
   /* Component */
-  --rail-bg: var(--navy-900);
-  --rail-ink: var(--navy-300);
+  --rail-bg: var(--ink-900);
+  --rail-ink: var(--ink-300);
   --rail-ink-strong: var(--white);
-  --rail-hover: var(--navy-800);
-  --rail-line: var(--navy-800);
+  --rail-hover: var(--ink-800);
+  --rail-line: var(--ink-800);
   --button-bg: var(--surface);
   --button-hover-bg: var(--surface-sunk);
   --button-border: var(--border-strong);
@@ -85,10 +92,15 @@
   --button-primary-hover-bg: var(--accent-hover);
   --input-border: var(--border-strong);
   --strip-empty: var(--line);
-  --series-1: var(--cobalt-600);
+  --series-1: var(--ink-600);
   --grid: var(--line);
-  --tooltip-bg: var(--navy-950);
+  --tooltip-bg: var(--ink-900);
   --tooltip-ink: var(--on-ink);
+  --chart-water: var(--water-50);
+  --chart-shallow: var(--shallow);
+  --chart-contour: var(--contour);
+  --chart-land: var(--land);
+  --chart-land-edge: var(--land-edge);
 
   color-scheme: light;
 }
@@ -101,17 +113,23 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-family: var(--font-ui);
   font-size: var(--text-base);
   line-height: 1.5;
   font-feature-settings: 'tnum' 1;
   -webkit-font-smoothing: antialiased;
 }
 
-h1 { font-size: var(--text-xl); line-height: 1.25; font-weight: 600; letter-spacing: -0.005em; }
+h1 { font-family: var(--font-chart); font-size: 1.875rem; line-height: 1.15; font-weight: 400; letter-spacing: -0.015em; }
+
+/* A monitor's name is a place on the chart: set like a charted area name, wherever it is the subject. */
+.area-name { font-family: var(--font-chart); font-style: italic; font-weight: 400; letter-spacing: 0; }
 h2 { font-size: var(--text-lg); line-height: 1.3; font-weight: 600; }
 
 a { color: var(--accent); }
+
+::selection { background: var(--accent-soft); color: var(--ink); }
+input, textarea { caret-color: var(--accent); }
 
 :focus-visible {
   outline: 2px solid var(--focus);
@@ -163,7 +181,14 @@ a { color: var(--accent); }
   color: var(--muted);
   font-size: var(--text-md);
   text-decoration: none;
-  &::before { content: '‹'; font-size: 1.2em; line-height: 1; }
+  /* A drawn chevron in the sidebar icons' 1.6 stroke, masked so it takes the link colour. */
+  &::before {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M12.5 4.5 7 10l5.5 5.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
   &:hover { color: var(--ink); }
 }
 
@@ -181,10 +206,10 @@ input:not([type='radio']):not([type='checkbox']), select, textarea {
   border-radius: var(--radius-sm);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
-  &:hover { border-color: var(--gray-500); }
+  &:hover { border-color: var(--slate-500); }
   &:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   &[aria-invalid='true'] { border-color: var(--down); }
-  &::placeholder { color: var(--gray-500); opacity: 0.8; }
+  &::placeholder { color: var(--slate-500); opacity: 0.8; }
 }
 
 input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); width: 1rem; height: 1rem; }

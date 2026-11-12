@@ -1,0 +1,143 @@
+<header class="top">
+  <a class="brand" routerLink="/" aria-label="Lampwatch home"><app-logo /></a>
+  <nav class="top-links" aria-label="Site">
+    <a [routerLink]="['/s', demoSlug]">Demo status page</a>
+    @if (github) { <a [href]="github" rel="noopener">GitHub</a> }
+    <a routerLink="/signin">Sign in</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="forecast">
+      <h1 id="hero-title">Know a site is down before your users do.</h1>
+      <p class="lede">
+        Lampwatch checks your sites from outside your network, calls one down after three missed checks in a row,
+        and tells you by email or Telegram. Your users get a status page they can read.
+      </p>
+
+      <section class="bulletin" aria-labelledby="bulletin-title">
+        <h2 id="bulletin-title">
+          @if (isSample()) { Sample reading } @else { Live from the demo }
+          @if (readAt(); as at) { <span class="read-at">read {{ clock(at) }}</span> }
+        </h2>
+        @if (bulletin().length === 0) {
+          <p class="bulletin-wait">Reading the demo…</p>
+        } @else {
+          <ul>
+            @for (line of bulletin(); track line.name) {
+              <li [class]="line.state" [class.lit]="highlighted() === line.name" tabindex="0"
+                  (pointerenter)="highlighted.set(line.name)" (pointerleave)="highlighted.set(null)"
+                  (focus)="highlighted.set(line.name)" (blur)="highlighted.set(null)">
+                <span class="area">{{ line.name }}.</span> {{ line.reading }}
+              </li>
+            }
+          </ul>
+        }
+        @if (isSample()) { <p class="sample-note">The demo page isn’t reachable, so these readings are made up.</p> }
+      </section>
+
+      <form class="start" [formGroup]="form" (ngSubmit)="start()" novalidate>
+        <label for="hero-email" class="visually-hidden">Email</label>
+        <input id="hero-email" type="email" formControlName="email" placeholder="you@company.com" autocomplete="email"
+               [attr.aria-invalid]="form.controls.email.touched && form.controls.email.invalid ? true : null" aria-describedby="hero-email-help" />
+        <button class="button primary" type="submit">Watch your first site</button>
+        <p class="help" id="hero-email-help">
+          @if (form.controls.email.touched && form.controls.email.invalid) { Enter an email like name@example.com. }
+          @else { Next you’ll choose a password, then add a URL. }
+        </p>
+      </form>
+    </div>
+
+    <div class="chart-wrap">
+      <app-sea-chart [lights]="lights()" [active]="highlighted()" (hover)="highlighted.set($event)"
+                     [title]="isSample() ? 'Sample chart' : (page()?.title ?? '')" [readAt]="readAt()" />
+      <p class="chart-key" aria-hidden="true">
+        <span><i class="k up"></i>Up</span><span><i class="k slow"></i>Slow</span><span><i class="k down"></i>Down</span>
+        @if (downCount() > 0) { <span class="k-note">A quick-flashing red light is a site that’s down now.</span> }
+      </p>
+    </div>
+  </section>
+
+  <section class="band how" aria-labelledby="how-title">
+    <div class="band-head">
+      <h2 id="how-title">One slow answer doesn’t page anyone</h2>
+      <p>A site is called down only when it misses three checks in a row, and back up after two passes. That’s the difference between an alert you act on and one you learn to ignore.</p>
+    </div>
+    <figure class="strip-figure">
+      <app-heartbeat-strip [checks]="exampleChecks" [slots]="12" [height]="72" />
+      <figcaption>Example: twelve one-minute checks. Bar height is response time; hatched bars are misses.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li><strong>Three misses in a row.</strong> Timeouts, connection errors or a 5xx. One alone is noise, so nothing happens yet.</li>
+      <li><strong>An incident opens.</strong> Every alert channel gets a message: email, Telegram, or both, with the error that tripped it.</li>
+      <li><strong>Two passes close it.</strong> You get the recovery message with how long it lasted, and your status page says so too.</li>
+    </ol>
+  </section>
+
+  <section class="band page-preview" aria-labelledby="page-title">
+    <div class="band-head">
+      <h2 id="page-title">A status page your users can actually read</h2>
+      <p>Thirty days of uptime per service and a plain sentence about what’s broken. It never shows your URLs or error messages.</p>
+      <a class="button" [routerLink]="['/s', demoSlug]">Open the demo status page</a>
+    </div>
+    @if (page(); as p) {
+      <!-- A working excerpt of the demo status page, from the same data as the bulletin above. -->
+      <div class="excerpt" [class]="'excerpt ' + pageHeadline().tone">
+        <div class="ex-mast">
+          <span class="ex-site">{{ isSample() ? 'Sample status page' : p.title }}</span>
+          @if (readAt(); as at) { <span class="ex-updated">Updated {{ clock(at) }}</span> }
+        </div>
+        <div class="ex-head">
+          <p class="ex-headline">{{ pageHeadline().text }}</p>
+        </div>
+        <ul class="ex-services">
+          @for (m of p.monitors.slice(0, 4); track m.name) {
+            <li>
+              <div class="ex-row">
+                <span class="area-name">{{ m.name }}</span>
+                <span class="ex-state" [class]="'ex-state s-' + m.status">{{ statusWord[m.status] }}</span>
+              </div>
+              @if (m.days.length > 0) { <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" /> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+
+  <section class="band facts" aria-labelledby="facts-title">
+    <div class="band-head">
+      <h2 id="facts-title">Notes on how it’s built</h2>
+      <p>Spring Boot, MySQL and Redis behind an Angular app. Every figure here comes from code or a test in the repository.</p>
+    </div>
+    <div class="notes">
+      <table>
+        <thead><tr><th scope="col">Figure</th><th scope="col">What it means</th><th scope="col">Source</th></tr></thead>
+        <tbody>
+          <tr><td class="fig">≈ 3,000</td><td>one-minute monitors per instance, against sites that take half a second to answer</td><td class="src">Estimated from the pipeline load test (1,000 monitors kept up with room to spare)</td></tr>
+          <tr><td class="fig">300+ req/s</td><td>for the dashboard and status page APIs, no errors at 50 concurrent clients</td><td class="src">API load test, 4-core desktop</td></tr>
+          <tr><td class="fig">3 / 2</td><td>missed checks to call a site down, passes to call it back up</td><td class="src">Status rules, <code>/api/settings/status-rules</code></td></tr>
+          <tr><td class="fig">Every hop</td><td>of a redirect is checked against private and reserved addresses</td><td class="src">SSRF guard</td></tr>
+          <tr><td class="fig">120 / min</td><td>anonymous requests per address before the API answers 429</td><td class="src">Redis rate limiter</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="close" aria-labelledby="close-title">
+    <app-logo class="close-mark" [wordmark]="false" />
+    <h2 id="close-title">Keep a light on your sites.</h2>
+    <a class="button primary" routerLink="/signup">Watch your first site</a>
+  </section>
+</main>
+
+<footer class="foot">
+  <app-logo />
+  <span>Website monitoring with alerts and a public status page.</span>
+  <nav aria-label="Footer">
+    <a [routerLink]="['/s', demoSlug]">Demo status page</a>
+    @if (github) { <a [href]="github" rel="noopener">Source</a> }
+    <a routerLink="/signin">Sign in</a>
+  </nav>
+</footer>

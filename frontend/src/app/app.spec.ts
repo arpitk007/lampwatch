@@ -18,7 +18,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const brand = (fixture.nativeElement as HTMLElement).querySelector('.rail .brand');
-    expect(brand?.textContent).toContain('Uptime');
+    expect(brand?.textContent).toContain('Lampwatch');
     expect(brand?.getAttribute('href')).toBe('/');
   });
 

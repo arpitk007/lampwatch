@@ -6,49 +6,41 @@
   min-height: 100vh;
 }
 
+/* The side pane is the chart itself, full bleed, with the brand and one line of live status over it. */
 .story {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-8) var(--space-12);
-  background: var(--rail-bg);
-  color: var(--rail-ink);
+  position: relative;
+  min-height: 100vh;
+  background: var(--chart-water);
+  border-right: 1px solid var(--line);
 }
-
+.story-chart { position: absolute; inset: 0; }
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-weight: 600;
-  font-size: var(--text-lg);
-  color: var(--rail-ink-strong);
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  z-index: 1;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
   text-decoration: none;
-  svg { width: 1.375rem; height: 1.375rem; fill: none; stroke: #3ccf91; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  font-size: 1.0625rem;
 }
-
-.story-main { margin: auto 0; max-width: 30rem; }
-.pitch { margin: 0; font-size: 2rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; color: var(--rail-ink-strong); }
-.pitch-sub { margin: var(--space-4) 0 var(--space-10); line-height: 1.6; }
-
-.preview {
-  display: grid;
-  border: 1px solid var(--rail-line);
-  border-radius: var(--radius);
-  background: var(--navy-950);
-}
-.preview-row {
-  display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr) 3rem;
-  align-items: center;
-  gap: var(--space-4);
+.story-caption {
+  position: absolute;
+  left: 2rem;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 1;
+  margin: 0;
   padding: var(--space-3) var(--space-4);
-  font-size: var(--text-sm);
-  & + & { border-top: 1px solid var(--rail-line); }
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-soft);
+  font-size: var(--text-md);
 }
-.p-name { color: var(--rail-ink-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.p-bars { width: 100%; height: 1.5rem; fill: #2fa877; }
-.p-bars .fail { fill: #e5534b; }
-.p-state { text-align: right; color: #3ccf91; font-weight: 500; }
-.down .p-state { color: #ff7b72; }
 
 .form-side {
   display: grid;
@@ -72,7 +64,9 @@ label { font-size: var(--text-md); }
 
 @media (max-width: 860px) {
   .split { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-  .story { padding: var(--space-5) var(--space-4); }
-  .story-main { display: none; }
+  /* A short strip of the chart above the form, so the phone screen keeps the product's world. */
+  .story { min-height: 0; height: 11rem; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand { top: var(--space-4); left: var(--space-4); }
+  .story-caption { left: var(--space-4); right: var(--space-4); bottom: var(--space-3); padding: var(--space-2) var(--space-3); font-size: var(--text-sm); }
   .form-side { place-items: start center; padding-top: var(--space-10); }
 }

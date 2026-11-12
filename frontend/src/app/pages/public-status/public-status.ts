@@ -3,12 +3,15 @@ import { RouterLink } from '@angular/router';
 import { problemOf } from '../../api/monitor-api';
 import { PublicStatusPage, StatusPageApi } from '../../api/status-page-api';
 import { poll } from '../../shared/polling';
+import { Logo } from '../../shared/logo';
+import { ChartLight, LIGHT_FOR_STATUS, SeaChart } from '../../shared/sea-chart';
+import { serviceReading, statusHeadline } from '../../shared/status-headline';
 import { clockTime, durationLabel } from '../../shared/time';
 import { dayLabel, UptimeBars, uptimeLabel } from '../../shared/uptime-bars';
 
 @Component({
   selector: 'app-public-status',
-  imports: [UptimeBars, RouterLink],
+  imports: [UptimeBars, RouterLink, Logo, SeaChart],
   templateUrl: './public-status.html',
   styleUrl: './public-status.scss',
 })
@@ -23,30 +26,23 @@ export class PublicStatus implements OnInit {
   protected readonly error = signal<string | null>(null);
 
   /** Names the affected services, so a visitor learns what is broken without scrolling. */
-  protected readonly headline = computed(() => {
-    const monitors = this.page()?.monitors ?? [];
-    const named = (status: string, verb: string) => {
-      const names = monitors.filter((m) => m.status === status).map((m) => m.name);
-      if (names.length === 0) return `Some services are ${verb}`;
-      if (names.length === 1) return `${names[0]} is ${verb}`;
-      if (names.length <= 3) return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} are ${verb}`;
-      return `${names.length} services are ${verb}`;
-    };
-    switch (this.page()?.overall) {
-      case 'MAJOR_OUTAGE':
-        return { tone: 'down', text: monitors.length > 1 && monitors.every((m) => m.status === 'DOWN') ? 'All services are down' : named('DOWN', 'down') };
-      case 'PARTIAL_OUTAGE':
-        return { tone: 'down', text: named('DOWN', 'down') };
-      case 'DEGRADED':
-        return { tone: 'slow', text: named('DEGRADED', 'slow') };
-      default:
-        return { tone: 'up', text: 'All systems operational' };
-    }
-  });
+  protected readonly headline = computed(() => statusHeadline(this.page()));
+  protected readonly lights = computed<ChartLight[]>(() =>
+    (this.page()?.monitors ?? []).map((m) => ({ name: m.name, state: LIGHT_FOR_STATUS[m.status] })),
+  );
+  protected readonly readAt = computed(() => (this.page() ? new Date(this.page()!.generatedAt) : null));
+  /** The service whose bulletin line or light is hovered, highlighted in both. */
+  protected readonly highlighted = signal<string | null>(null);
+
+  protected reading(m: PublicStatusPage['monitors'][number], page: PublicStatusPage): string {
+    return serviceReading(m, page);
+  }
 
   protected readonly statusWord: Record<string, string> = {
     UP: 'Operational', DEGRADED: 'Slower than usual', DOWN: 'Down', PAUSED: 'Paused', UNKNOWN: 'No data yet',
   };
+  /** The chart light each state shows on Lampwatch's charts, so the page speaks the same language. */
+  protected readonly characteristic: Record<string, string> = { UP: 'Fl G 5s', DEGRADED: 'Fl(2) Y 8s', DOWN: 'Q R', PAUSED: 'Unlit', UNKNOWN: 'Unlit' };
   protected readonly uptimeLabel = uptimeLabel;
   protected readonly dayLabel = dayLabel;
   protected readonly clockTime = clockTime;
@@ -55,11 +51,13 @@ export class PublicStatus implements OnInit {
     poll(() => this.load(), 60_000, this.destroyRef);
   }
 
-  protected incidentLine(i: PublicStatusPage['incidents'][number]): string {
-    const start = new Date(i.startedAt);
-    const when = start.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    const length = durationLabel((i.resolvedAt ? Date.parse(i.resolvedAt) : Date.now()) - start.getTime());
-    return i.resolvedAt ? `${when}, down for ${length}` : `${when}, down for ${length} so far`;
+  protected startedLabel(i: PublicStatusPage['incidents'][number]): string {
+    return new Date(i.startedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  protected lengthLabel(i: PublicStatusPage['incidents'][number]): string {
+    const length = durationLabel((i.resolvedAt ? Date.parse(i.resolvedAt) : Date.now()) - Date.parse(i.startedAt));
+    return i.resolvedAt ? length : `${length} so far`;
   }
 
   private load(): void {

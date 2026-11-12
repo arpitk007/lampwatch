@@ -7,7 +7,7 @@
 @if (monitor(); as m) {
   <header class="page-head head">
     <div class="title">
-      <h1>{{ m.name }}</h1>
+      <h1 class="area-name">{{ m.name }}</h1>
       <a class="url" [href]="m.url" target="_blank" rel="noopener noreferrer">{{ m.url }}</a>
     </div>
     @if (!outage()) {

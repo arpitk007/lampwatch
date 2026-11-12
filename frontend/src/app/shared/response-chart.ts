@@ -41,6 +41,7 @@ const PAD = { top: 12, right: 12, bottom: 28, left: 56 };
           @if (a.y !== null) { <circle class="dot" [attr.cx]="a.x" [attr.cy]="a.y" r="4.5" /> }
         }
       </svg>
+      @if (emptyNote(); as note) { <p class="empty">{{ note }}</p> }
       @if (activeSlot(); as a) {
         <div class="tip" [style.left.px]="a.tipX">{{ a.label }}</div>
       }
@@ -55,6 +56,21 @@ const PAD = { top: 12, right: 12, bottom: 28, left: 56 };
     .axis { fill: var(--muted); font-size: 12px; font-family: inherit; }
     .line { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
     .fail { fill: var(--down); }
+    .empty {
+      position: absolute;
+      top: 38%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      padding: 0.5rem 0.875rem;
+      max-width: calc(100% - 6rem);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: var(--text-sm);
+      text-align: center;
+    }
     .crosshair { stroke: var(--muted); stroke-width: 1; }
     .dot { fill: var(--series-1); stroke: var(--surface); stroke-width: 2; }
     .tip {
@@ -173,6 +189,16 @@ export class ResponseChart implements OnDestroy {
       tipX: Math.min(Math.max(x, 110), this.width() - 110),
       label: slotLabel(s, this.hours()),
     };
+  });
+
+  /** Says why the plot is blank instead of leaving an empty axis to be read as zero. */
+  protected readonly emptyNote = computed(() => {
+    const points = this.points();
+    if (points.some((p) => p.avgMs !== null)) return null;
+    const range = rangeLabel(this.hours());
+    return points.some((p) => p.checks > 0)
+      ? `No successful checks in the last ${range}, so there are no response times to plot. Red ticks mark hours with failures.`
+      : `No checks in the last ${range}.`;
   });
 
   protected readonly summary = computed(() => {

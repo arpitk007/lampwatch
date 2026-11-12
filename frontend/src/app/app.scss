@@ -35,12 +35,9 @@
   gap: var(--space-2);
   padding: 0 var(--space-3);
   min-height: 40px;
-  font-weight: 600;
-  font-size: var(--text-lg);
+  font-size: 1.0625rem;
   color: var(--rail-ink-strong);
   text-decoration: none;
-
-  svg { width: 1.375rem; height: 1.375rem; fill: none; stroke: #3ccf91; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 }
 
 .nav {
@@ -82,7 +79,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: var(--navy-600);
+  background: var(--ink-600);
   color: var(--rail-ink-strong);
   font-weight: 600;
   text-transform: uppercase;
@@ -108,7 +105,7 @@
   &:hover { color: var(--rail-ink-strong); text-decoration: underline; }
 }
 
-/* Cobalt focus rings vanish on navy; the rail uses white, which clears 3:1 against it. */
+/* Magenta focus rings are too dark on navy; the rail uses white, which clears 3:1 against it. */
 .rail :focus-visible { outline-color: var(--rail-ink-strong); }
 
 .content {

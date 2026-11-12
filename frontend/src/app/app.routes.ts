@@ -1,11 +1,18 @@
 import { Routes } from '@angular/router';
-import { signedIn, signedOut } from './auth/auth';
+import { guest, signedIn, signedOut } from './auth/auth';
 
 const authPage = () => import('./pages/auth/auth-page').then((m) => m.AuthPage);
 
 export const routes: Routes = [
   { path: 'signin', loadComponent: authPage, canActivate: [signedOut], data: { mode: 'signin' }, title: 'Sign in' },
   { path: 'signup', loadComponent: authPage, canActivate: [signedOut], data: { mode: 'signup' }, title: 'Create account' },
+  {
+    path: '',
+    pathMatch: 'full',
+    canMatch: [guest],
+    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+    title: 'Lampwatch: website monitoring with a public status page',
+  },
   { path: 's/:slug', loadComponent: () => import('./pages/public-status/public-status').then((m) => m.PublicStatus), title: 'Status' },
   {
     path: '',

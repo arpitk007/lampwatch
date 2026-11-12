@@ -1,46 +1,74 @@
 @if (notFound()) {
-  <div class="wrap lone">
-    <h1>No status page here</h1>
-    <p class="muted">Check the address, or ask whoever shared it for the right link.</p>
-  </div>
-} @else if (page(); as p) {
-  <header class="band" [class]="'band ' + headline().tone">
-    <div class="wrap band-inner">
-      <h1>{{ p.title }}</h1>
-      <p class="headline" role="status">
-        <svg viewBox="0 0 12 12" aria-hidden="true">
-          @switch (headline().tone) {
-            @case ('up') { <circle cx="6" cy="6" r="5" /> }
-            @case ('slow') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
-            @default { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
-          }
-        </svg>
-        {{ headline().text }}
-      </p>
+  <header class="top"><a routerLink="/" class="home-link"><app-logo /></a></header>
+  <main id="main" class="missing">
+    <div class="missing-chart"><app-sea-chart [lights]="[]" title="Uncharted" subtitle="No status page at this address" /></div>
+    <div class="missing-text">
+      <h1>No status page here</h1>
+      <p class="muted">Check the address, or ask whoever shared it for the right link.</p>
+      <a class="button" routerLink="/">Go to Lampwatch</a>
     </div>
+  </main>
+} @else if (page(); as p) {
+  <header class="top">
+    <span class="site">{{ p.title }}</span>
+    <span class="updated">Updated {{ generated(p) }}, refreshes every minute</span>
   </header>
 
-  <div class="wrap body">
-    @if (error(); as e) { <p class="notice" role="alert">{{ e }} Showing the last data loaded.</p> }
+  <main id="main">
+    <section class="hero" [class]="'hero ' + headline().tone" aria-labelledby="status-title">
+      <div class="forecast">
+        <h1 id="status-title" class="headline" role="status">
+          <svg viewBox="0 0 12 12" aria-hidden="true">
+            @switch (headline().tone) {
+              @case ('up') { <circle cx="6" cy="6" r="5" /> }
+              @case ('slow') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
+              @default { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+            }
+          </svg>
+          {{ headline().text }}
+        </h1>
 
-    <section class="panel" aria-labelledby="services-title">
-      <div class="panel-head">
-        <h2 id="services-title">Services</h2>
-        <ul class="legend" aria-label="Bar colors">
-          <li><span class="swatch full"></span>No downtime</li>
-          <li><span class="swatch minor"></span>Under 1%</li>
-          <li><span class="swatch major"></span>1% or more</li>
-          <li><span class="swatch none"></span>No data</li>
-        </ul>
+        @if (error(); as e) { <p class="notice" role="alert">{{ e }} Showing the last data loaded.</p> }
+
+        @if (p.monitors.length === 0) {
+          <p class="muted">This page doesn’t list any services yet.</p>
+        } @else {
+          <ul class="bulletin" aria-label="Each service right now">
+            @for (m of p.monitors; track m.name + $index) {
+              <li [class]="'s-' + m.status" [class.lit]="highlighted() === m.name" tabindex="0"
+                  (pointerenter)="highlighted.set(m.name)" (pointerleave)="highlighted.set(null)"
+                  (focus)="highlighted.set(m.name)" (blur)="highlighted.set(null)">
+                <span class="area-name">{{ m.name }}.</span> {{ reading(m, p) }}
+              </li>
+            }
+          </ul>
+        }
       </div>
-      @if (p.monitors.length === 0) {
-        <p class="panel-body muted">This page doesn’t list any services yet.</p>
-      } @else {
+
+      @if (p.monitors.length > 0) {
+        <div class="chart-wrap">
+          <app-sea-chart [lights]="lights()" [active]="highlighted()" (hover)="highlighted.set($event)"
+                         [title]="p.title" [readAt]="readAt()" />
+        </div>
+      }
+    </section>
+
+    @if (p.monitors.length > 0) {
+      <section class="sheet" aria-labelledby="history-title">
+        <div class="sheet-head">
+          <h2 id="history-title">The last 30 days</h2>
+          <ul class="legend" aria-label="Bar colors">
+            <li><span class="swatch full"></span>No downtime</li>
+            <li><span class="swatch minor"></span>Under 1%</li>
+            <li><span class="swatch major"></span>1% or more</li>
+            <li><span class="swatch none"></span>No data</li>
+          </ul>
+        </div>
         <ul class="services">
           @for (m of p.monitors; track m.name + $index) {
             <li>
               <div class="service-head">
-                <span class="name">{{ m.name }}</span>
+                <span class="name area-name">{{ m.name }}</span>
                 <span class="state" [class]="'state s-' + m.status">
                   <svg viewBox="0 0 12 12" aria-hidden="true">
                     @switch (m.status) {
@@ -51,6 +79,7 @@
                     }
                   </svg>
                   {{ statusWord[m.status] }}
+                  <span class="char">{{ characteristic[m.status] }}</span>
                 </span>
               </div>
               <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" />
@@ -71,31 +100,36 @@
             </li>
           }
         </ul>
-      }
-    </section>
+      </section>
+    }
 
-    <section class="panel" aria-labelledby="past-title">
-      <div class="panel-head"><h2 id="past-title">Incidents in the past 14 days</h2></div>
+    <section class="sheet notes" aria-labelledby="past-title">
+      <div class="sheet-head"><h2 id="past-title">Incidents in the past 14 days</h2></div>
       @if (p.incidents.length === 0) {
-        <p class="panel-body muted">Nothing went down in the past 14 days.</p>
+        <p class="muted">Nothing went down in the past 14 days.</p>
       } @else {
-        <ul class="incidents">
-          @for (i of p.incidents; track i.startedAt + i.monitorName) {
-            <li [class.open]="!i.resolvedAt">
-              <span class="dot" aria-hidden="true"></span>
-              <span class="what">{{ i.monitorName }}</span>
-              <span class="line">{{ incidentLine(i) }}</span>
-              <span class="tag">{{ i.resolvedAt ? 'Resolved' : 'Ongoing' }}</span>
-            </li>
-          }
-        </ul>
+        <table>
+          <thead><tr><th scope="col">Started</th><th scope="col">Service</th><th scope="col">How long</th><th scope="col">Now</th></tr></thead>
+          <tbody>
+            @for (i of p.incidents; track i.startedAt + i.monitorName) {
+              <tr [class.open]="!i.resolvedAt">
+                <td class="when">{{ startedLabel(i) }}</td>
+                <td class="area-name">{{ i.monitorName }}</td>
+                <td>{{ lengthLabel(i) }}</td>
+                <td><span class="tag">{{ i.resolvedAt ? 'Resolved' : 'Ongoing' }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
       }
     </section>
+  </main>
 
-    <p class="footer">Updated {{ generated(p) }}, refreshes every minute. <a routerLink="/">Monitoring by Uptime</a></p>
-  </div>
+  <footer class="foot">
+    <a routerLink="/" class="by">Monitoring by <app-logo /></a>
+  </footer>
 } @else if (error(); as e) {
-  <div class="wrap lone"><p class="notice" role="alert">{{ e }}</p></div>
+  <div class="lone"><p class="notice" role="alert">{{ e }}</p></div>
 } @else {
-  <div class="wrap lone"><p class="muted">Loading…</p></div>
+  <div class="lone"><p class="muted">Loading…</p></div>
 }

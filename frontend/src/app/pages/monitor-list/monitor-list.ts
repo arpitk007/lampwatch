@@ -4,13 +4,14 @@ import { forkJoin } from 'rxjs';
 import { CheckResult, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { secondsLabel, StatusRulesStore } from '../../api/status-rules';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
+import { SeaChart } from '../../shared/sea-chart';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
 import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
 
 @Component({
   selector: 'app-monitor-list',
-  imports: [RouterLink, HeartbeatStrip, StatusBadge],
+  imports: [RouterLink, HeartbeatStrip, StatusBadge, SeaChart],
   templateUrl: './monitor-list.html',
   styleUrl: './monitor-list.scss',
 })
@@ -48,7 +49,6 @@ export class MonitorList {
     return { tone: 'waiting', headline: 'Waiting for the first checks', detail: 'Results appear here within a few seconds.' };
   });
 
-  protected readonly emptyBars = Array.from({ length: 15 }, (_, i) => i);
 
   protected readonly timeAgo = timeAgo;
   protected readonly intervalLabel = intervalLabel;
