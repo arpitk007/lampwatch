@@ -80,8 +80,6 @@ export class Home {
   });
 
   protected readonly uptimeLabel = uptimeLabel;
-  /** The chart light each state shows, as on the status page itself. */
-  protected readonly characteristic: Record<string, string> = { UP: 'Fl G 5s', DEGRADED: 'Fl(2) Y 8s', DOWN: 'Q R', PAUSED: 'Unlit', UNKNOWN: 'Unlit' };
 
   protected readonly statusWord: Record<string, string> = {
     UP: 'Operational', DEGRADED: 'Slower than usual', DOWN: 'Down', PAUSED: 'Paused', UNKNOWN: 'No data yet',

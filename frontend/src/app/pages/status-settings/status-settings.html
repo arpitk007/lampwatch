@@ -45,7 +45,7 @@
       @for (m of list; track m.id) {
         <label class="choice">
           <input type="checkbox" [checked]="isSelected(m.id)" (change)="toggle(m.id, $any($event.target).checked)" />
-          <span class="choice-name">{{ m.name }}</span>
+          <span class="choice-name area-name">{{ m.name }}</span>
           @if (m.status === 'DOWN' && !m.paused) { <span class="choice-state">Down now</span> }
         </label>
       }

@@ -332,3 +332,10 @@ input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); width
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Touch screens get 44px targets; a mouse keeps the denser desktop sizes. */
+@media (pointer: coarse), (max-width: 860px) {
+  .button, .back { min-height: 44px; }
+  input:not([type='radio']):not([type='checkbox']), select { min-height: 44px; }
+  .switch a, .help a { display: inline-flex; align-items: center; min-height: 44px; }
+}

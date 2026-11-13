@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertsApi, Channel, ChannelType } from '../../api/alerts-api';
 import { problemOf } from '../../api/monitor-api';
+import { plainAlertError } from '../../shared/plain-error';
 import { Confirm } from '../../shared/confirm';
 import { timeAgo } from '../../shared/time';
 
@@ -46,10 +47,16 @@ export class AlertsPage {
       case 'SENT':
         return `Last sent ${when}: ${d.subject}`;
       case 'PENDING':
-        return d.error ? `Retrying: ${d.error}` : `Sending: ${d.subject}`;
+        return d.error ? `Retrying. ${plainAlertError(d.error)!.text}` : `Sending: ${d.subject}`;
       case 'FAILED':
-        return `Couldn’t deliver “${d.subject}”: ${d.error ?? 'unknown error'}`;
+        return `Couldn’t deliver “${d.subject}”. ${plainAlertError(d.error)?.text ?? 'No reason was recorded.'}`;
     }
+  }
+
+  /** The stored error behind a failed or retrying delivery, for whoever runs the server. */
+  protected deliveryRaw(c: Channel): string | null {
+    const d = c.lastDelivery;
+    return d && d.status !== 'SENT' ? (plainAlertError(d.error)?.raw ?? null) : null;
   }
 
   protected sendTest(c: Channel): void {

@@ -40,7 +40,7 @@ export function serviceReading(m: PublicStatusPage['monitors'][number], page: Pu
     case 'DEGRADED':
       return `Slower than usual.${month}`;
     case 'UP':
-      return `Good.${month}`;
+      return `Operational.${month}`;
     default:
       return 'Not being checked.';
   }

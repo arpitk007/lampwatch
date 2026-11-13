@@ -30,7 +30,7 @@
   dd { margin: 0; font-size: var(--text-xl); font-weight: 600; line-height: 1.2; }
 }
 
-/* Columns line up with the sheet's rules; a row's hover and down tint bleed a little past them. */
+/* Heads and rows share one inset, so a row's hover and down tint stay inside the sheet's rules. */
 .cols, .row {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) 8.5rem minmax(12rem, 2fr) 7.5rem;
@@ -39,7 +39,7 @@
 }
 
 .cols {
-  padding: var(--space-3) 0;
+  padding: var(--space-3);
   border-bottom: 1px solid var(--ink);
   color: var(--ink);
   font-size: var(--text-sm);
@@ -47,7 +47,7 @@
   .right { text-align: right; }
 }
 
-.rows { list-style: none; margin: 0 calc(-1 * var(--space-3)); padding: 0; }
+.rows { list-style: none; margin: 0; padding: 0; }
 .rows li { border-bottom: 1px solid var(--line); }
 
 .row {

@@ -54,7 +54,7 @@ export class Confirm {
     dialog::backdrop { background: color-mix(in srgb, var(--ink) 45%, transparent); }
     dialog[open] { animation: rise 160ms cubic-bezier(0.16, 1, 0.3, 1); }
     @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
-    h2 { margin: 0; font-size: var(--text-lg); }
+    h2 { margin: 0; font-family: var(--font-chart); font-weight: 400; font-size: 1.375rem; line-height: 1.25; }
     p { margin: var(--space-2) 0 var(--space-6); color: var(--ink-soft); font-size: var(--text-md); line-height: 1.55; }
     .actions { display: flex; justify-content: end; gap: var(--space-2); }
     .destructive { background: var(--down); border-color: var(--down); color: var(--on-ink); }

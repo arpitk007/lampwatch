@@ -19,7 +19,12 @@ describe('historyRows', () => {
   it('gives failed and slow checks a row of their own, splitting the runs around them', () => {
     const rows = historyRows([check(1, 300), check(2, null, false, null), check(3, 3500), check(4, 290), check(5, 310)], 3000);
     expect(rows.map((r) => [r.result, r.count])).toEqual([['Passed', 1], ['Failed', 1], ['Slow', 1], ['Passed', 2]]);
-    expect(rows[1].details).toBe('Timed out');
+    expect(rows[1].details).toBe('No answer in time');
+  });
+
+  it('merges a run of failures with the same cause into one row', () => {
+    const rows = historyRows([check(1, null, false, null), check(2, null, false, null), check(3, null, false, null), check(4, 300)], 3000);
+    expect(rows.map((r) => [r.result, r.count])).toEqual([['Failed', 3], ['Passed', 1]]);
   });
 
   it('marks a run with different status codes as mixed', () => {

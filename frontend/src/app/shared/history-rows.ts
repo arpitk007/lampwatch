@@ -1,4 +1,5 @@
 import { CheckResult } from '../api/monitor-api';
+import { plainCheckError } from './plain-error';
 
 export type HistoryResult = 'Passed' | 'Slow' | 'Failed';
 
@@ -15,7 +16,8 @@ export interface HistoryRow {
 
 /**
  * Collapses consecutive ordinary passes into one row, so the failures and slow checks stand out.
- * Failed and slow checks always keep a row of their own. Checks come newest first.
+ * Slow checks keep a row of their own; a run of failures with the same cause shares one row, so a long
+ * outage reads as one line instead of a screen of identical ones. Checks come newest first.
  */
 export function historyRows(checks: CheckResult[], slowAfterMs: number | null): HistoryRow[] {
   const rows: HistoryRow[] = [];
@@ -46,15 +48,17 @@ export function historyRows(checks: CheckResult[], slowAfterMs: number | null): 
       continue;
     }
     flush();
-    rows.push({
-      newestAt: c.checkedAt,
-      oldestAt: c.checkedAt,
-      count: 1,
-      result: c.success ? 'Slow' : 'Failed',
-      code: c.statusCode === null ? '–' : String(c.statusCode),
-      response: c.responseTimeMs === null ? '–' : `${c.responseTimeMs} ms`,
-      details: c.errorMessage ?? '',
-    });
+    const details = plainCheckError(c.errorMessage)?.text ?? '';
+    const code = c.statusCode === null ? '–' : String(c.statusCode);
+    const response = c.responseTimeMs === null ? '–' : `${c.responseTimeMs} ms`;
+    const last = rows[rows.length - 1];
+    if (!c.success && last?.result === 'Failed' && last.details === details && last.code === code) {
+      last.oldestAt = c.checkedAt;
+      last.count++;
+      if (last.response !== response) last.response = '–';
+      continue;
+    }
+    rows.push({ newestAt: c.checkedAt, oldestAt: c.checkedAt, count: 1, result: c.success ? 'Slow' : 'Failed', code, response, details });
   }
   flush();
   return rows;

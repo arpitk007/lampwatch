@@ -63,17 +63,12 @@
   border-top: 2px solid var(--ink);
 
   li {
-    padding: var(--space-3) var(--space-2) var(--space-3) var(--space-3);
-    margin: 0 calc(-1 * var(--space-2)) 0 calc(-1 * var(--space-3));
+    padding: var(--space-3) 0;
     color: var(--ink-soft);
     font-size: var(--text-base);
     line-height: 1.45;
-    border-radius: var(--radius-sm);
-    cursor: default;
   }
-  li + li { border-top: 1px solid var(--line); border-radius: 0; }
-  li.lit, li:focus-visible { background: var(--paper); outline: none; }
-  li:focus-visible { box-shadow: 0 0 0 2px var(--focus); }
+  li + li { border-top: 1px solid var(--line); }
   .area-name { font-size: 1.125rem; color: var(--ink); }
   li.s-DOWN, li.s-DOWN .area-name { color: var(--down); }
 }
@@ -143,11 +138,9 @@
   white-space: nowrap;
   svg { width: 0.7em; height: 0.7em; fill: currentColor; stroke: currentColor; }
 }
-.char { margin-left: var(--space-2); color: var(--muted); font-weight: 500; font-size: var(--text-xs); letter-spacing: 0.02em; }
 .s-UP { color: var(--up); }
 .s-DEGRADED { color: var(--slow); }
 .s-DOWN { color: var(--down); }
-.s-DOWN .char { color: var(--down); }
 .s-PAUSED, .s-UNKNOWN { color: var(--muted); }
 
 .service-foot {
@@ -161,8 +154,21 @@
 .uptime { color: var(--ink); font-weight: 500; font-size: var(--text-sm); }
 
 details { margin-top: var(--space-1); font-size: var(--text-sm); }
-summary { cursor: pointer; color: var(--muted); min-height: 32px; display: inline-flex; align-items: center; }
-summary:hover { color: var(--accent); }
+/* A visible control: accent text and a turning chevron, at a full 44px tap height. */
+summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--accent);
+  font-weight: 500;
+  list-style: none;
+  &::-webkit-details-marker { display: none; }
+  &::before { content: ''; width: 0.4em; height: 0.4em; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s ease-out; }
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+details[open] > summary::before { transform: rotate(45deg); }
 details table { border-collapse: collapse; margin-top: var(--space-2); }
 details th, details td { text-align: left; padding: var(--space-1) var(--space-6) var(--space-1) 0; border-bottom: 1px solid var(--line); }
 details th { font-weight: 500; color: var(--muted); }
@@ -187,7 +193,7 @@ details th { font-weight: 500; color: var(--muted); }
   margin-top: var(--space-16);
   padding: var(--space-6) var(--space-4);
   border-top: 1px solid var(--line);
-  .by { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--muted); font-size: var(--text-sm); text-decoration: none; }
+  .by { display: inline-flex; align-items: center; min-height: 44px; gap: var(--space-2); color: var(--muted); font-size: var(--text-sm); text-decoration: none; }
   .by app-logo { color: var(--ink); font-size: 0.95rem; }
   .by:hover app-logo { color: var(--accent); }
 }

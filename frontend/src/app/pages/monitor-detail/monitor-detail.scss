@@ -17,7 +17,7 @@ h1 { overflow-wrap: anywhere; }
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: start;
   gap: var(--space-4);
-  margin-bottom: var(--space-10);
+  margin-bottom: var(--space-6);
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius);
   background: var(--down);
@@ -28,20 +28,33 @@ h1 { overflow-wrap: anywhere; }
 }
 .outage-mark { width: 1.5rem; height: 1.5rem; margin-top: 0.15rem; fill: currentColor; }
 .outage-fact { margin: var(--space-1) 0 0; font-size: var(--text-md); color: rgb(255 255 255 / 0.9); strong { color: var(--on-ink); font-weight: 600; } }
-.outage-channels {
-  list-style: none;
-  margin: var(--space-3) 0 0;
-  padding: var(--space-3) 0 0;
-  border-top: 1px solid rgb(255 255 255 / 0.22);
-  display: grid;
-  gap: 2px;
-  font-size: var(--text-md);
-  color: rgb(255 255 255 / 0.9);
+/* The raw stored error, for whoever has to fix it; the sentence above is for everyone else. */
+.raw {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  summary { cursor: pointer; min-height: 36px; display: inline-flex; align-items: center; gap: var(--space-2); color: rgb(255 255 255 / 0.9); text-decoration: underline; text-decoration-color: rgb(255 255 255 / 0.45); text-underline-offset: 3px; }
+  summary:hover { color: var(--on-ink); }
+  code { display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: rgb(0 0 0 / 0.18); font-size: var(--text-xs); overflow-wrap: anywhere; }
+}
 
-  .who { font-weight: 600; color: var(--on-ink); }
-  li::before { content: ''; display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: var(--space-2); border-radius: 50%; border: 1.5px solid currentColor; vertical-align: 0.05em; }
-  li.sent::before { background: currentColor; }
-  li.failed { color: var(--on-ink); font-weight: 600; }
+/* Who was told: a ruled line under the band, so the band itself says one thing. */
+.told {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: var(--space-2) var(--space-6);
+  margin: calc(var(--space-2) - var(--space-6)) 0 var(--space-10);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-md);
+
+  h2 { margin: 0; font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 600; color: var(--ink); }
+  p { margin: 0; color: var(--ink-soft); }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); color: var(--ink-soft); }
+  .who { font-weight: 600; color: var(--ink); }
+  li::before { content: ''; display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: var(--space-2); border-radius: 50%; border: 1.5px solid var(--muted); vertical-align: 0.05em; }
+  li.sent::before { background: var(--up); border-color: var(--up); }
+  li.failed::before { border-color: var(--down); }
+  li.failed { color: var(--danger-ink); }
 }
 .outage-actions { display: flex; flex-direction: column; gap: var(--space-2); }
 .button.on-alarm {
@@ -74,7 +87,7 @@ h1 { overflow-wrap: anywhere; }
 
 .big { font-family: var(--font-chart); font-size: 2.25rem; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; }
 .big small { font-family: var(--font-ui); font-size: 0.42em; font-weight: 500; color: var(--muted); letter-spacing: 0; }
-.small-big { font-size: 1.625rem; }
+.small-big { font-size: 1.625rem; white-space: nowrap; }
 .sub { color: var(--muted); font-size: var(--text-sm); }
 
 .strip { padding: var(--space-5) 0 0; }
@@ -138,6 +151,9 @@ td { white-space: nowrap; }
 .chart table { margin-top: var(--space-2); }
 
 .num { text-align: right; }
+/* Failed rows carry a tint, so the outer cells keep their text off its edges. */
+.history th:first-child, .history td:first-child { padding-left: var(--space-3); }
+.history th:last-child, .history td:last-child { padding-right: var(--space-3); }
 .details { white-space: normal; color: var(--muted); min-width: 14rem; }
 .result { font-weight: 500; color: var(--up); }
 .failed td { background: color-mix(in srgb, var(--danger-bg) 70%, transparent); }
@@ -177,6 +193,7 @@ td { white-space: nowrap; }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fact:nth-child(3) { border-left: 0; padding-left: 0; }
   .fact:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .small-big { font-size: 1.375rem; }
 }
 
 @media (max-width: 640px) {
@@ -184,9 +201,16 @@ td { white-space: nowrap; }
   .history th:last-child, .history td.details { display: none; }
 }
 
+@media (pointer: coarse), (max-width: 860px) {
+  .range button { min-height: 44px; }
+  .url { display: inline-flex; align-items: center; min-height: 44px; }
+  .chart summary, .raw summary { min-height: 44px; }
+}
+
 @media (max-width: 760px) {
   .outage { grid-template-columns: auto minmax(0, 1fr); padding: var(--space-4); }
   .outage-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .told { grid-template-columns: minmax(0, 1fr); }
   .incident-list li { grid-template-columns: 1fr; gap: var(--space-1); }
   .panel-head .meta { display: none; }
 }

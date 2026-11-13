@@ -1,3 +1,4 @@
+import { plainCheckError } from './plain-error';
 import { Component, computed, input, signal } from '@angular/core';
 import { CheckResult } from '../api/monitor-api';
 
@@ -111,7 +112,7 @@ export class HeartbeatStrip {
         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
       });
       if (!c.success) {
-        return { kind: 'down', height: 100, label: `${when}: failed, ${c.errorMessage ?? 'no response'}` };
+        return { kind: 'down', height: 100, label: `${when}: failed, ${plainCheckError(c.errorMessage)?.text ?? 'no response'}` };
       }
       const ms = c.responseTimeMs ?? 0;
       const threshold = this.slowAfterMs();

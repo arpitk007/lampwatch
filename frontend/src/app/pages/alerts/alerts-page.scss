@@ -1,4 +1,4 @@
-:host { display: block; max-width: 48rem; }
+:host { display: block; max-width: 44rem; }
 
 .muted { color: var(--muted); margin: 0; }
 
@@ -30,6 +30,12 @@
 .target { font-size: var(--text-lg); color: var(--ink); overflow-wrap: anywhere; }
 .delivery { font-size: var(--text-sm); color: var(--muted); }
 .delivery.failed { color: var(--down); }
+.raw {
+  font-size: var(--text-sm);
+  summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; color: var(--muted); }
+  summary:hover { color: var(--accent); }
+  code { display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--surface-sunk); color: var(--ink-soft); font-size: var(--text-xs); overflow-wrap: anywhere; }
+}
 .note { font-size: var(--text-sm); color: var(--up); }
 .note.problem { color: var(--down); }
 .actions { display: flex; gap: var(--space-2); }
@@ -55,6 +61,10 @@ legend { font-weight: 500; font-size: var(--text-md); padding: 0; margin-bottom:
 .field { display: grid; gap: 0.35rem; }
 .field label { font-size: var(--text-md); }
 .help { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+
+@media (pointer: coarse), (max-width: 860px) {
+  .choice { min-height: 44px; }
+}
 
 @media (max-width: 600px) {
   .channels li { grid-template-columns: auto minmax(0, 1fr); }

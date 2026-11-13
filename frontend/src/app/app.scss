@@ -129,6 +129,9 @@
   }
   .brand { padding: 0; }
   .nav { order: 3; width: 100%; display: flex; overflow-x: auto; margin: 0 calc(-1 * var(--space-3)); }
+  .nav a { min-height: 44px; }
+  .brand { min-height: 44px; }
+  .signout { min-height: 44px; padding: 0 var(--space-3); margin-right: calc(-1 * var(--space-3)); font-size: var(--text-md); }
   .nav svg { display: none; }
   .account { margin: 0 0 0 auto; padding: 0; border: 0; display: flex; }
   .avatar, .email { display: none; }

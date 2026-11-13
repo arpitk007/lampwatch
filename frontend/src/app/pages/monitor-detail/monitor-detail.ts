@@ -8,6 +8,7 @@ import { Confirm } from '../../shared/confirm';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
 import { historyRows } from '../../shared/history-rows';
 import { ResponseChart } from '../../shared/response-chart';
+import { plainAlertError, plainCheckError } from '../../shared/plain-error';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
 import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
@@ -61,7 +62,7 @@ export class MonitorDetail implements OnInit {
         case 'SENT':
           return { id: c.id, who, state: 'sent', text: `alerted ${absoluteTime(d.at)}` };
         case 'FAILED':
-          return { id: c.id, who, state: 'failed', text: `alert failed${d.error ? ': ' + d.error : ''}` };
+          return { id: c.id, who, state: 'failed', text: `alert failed. ${plainAlertError(d.error)?.text ?? 'No reason was recorded.'}` };
         default:
           return { id: c.id, who, state: 'pending', text: 'alert queued' };
       }
@@ -69,7 +70,7 @@ export class MonitorDetail implements OnInit {
     return {
       since,
       sinceLabel: since ? absoluteTime(since) : null,
-      cause: lastFailure?.errorMessage ?? open?.cause ?? null,
+      cause: plainCheckError(lastFailure?.errorMessage ?? open?.cause),
       channels,
       channelsLoaded: this.channels() !== null,
     };
@@ -95,6 +96,7 @@ export class MonitorDetail implements OnInit {
     };
   });
 
+  protected readonly plainCheck = plainCheckError;
   protected readonly timeAgo = timeAgo;
   protected readonly intervalLabel = intervalLabel;
   protected readonly clockTime = clockTime;

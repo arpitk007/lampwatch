@@ -27,6 +27,9 @@
             <span class="type">{{ typeLabel[c.type] }}</span>
             <span class="target">{{ c.target }}</span>
             <span class="delivery" [class.failed]="c.lastDelivery?.status === 'FAILED'">{{ deliveryLine(c) }}</span>
+            @if (deliveryRaw(c); as raw) {
+              <details class="raw"><summary>Technical detail</summary><code>{{ raw }}</code></details>
+            }
             @if (notes()[c.id]; as n) { <span class="note" [class.problem]="!n.ok" role="status">{{ n.text }}</span> }
           </div>
           <div class="actions">

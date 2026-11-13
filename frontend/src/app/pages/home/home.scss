@@ -10,11 +10,11 @@
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
-.brand { color: var(--ink); text-decoration: none; font-size: 1.125rem; }
+.brand { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none; font-size: 1.125rem; }
 .top-links {
   display: flex;
   gap: var(--space-6);
-  a { color: var(--ink-soft); text-decoration: none; font-size: var(--text-md); font-weight: 500; }
+  a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-soft); text-decoration: none; font-size: var(--text-md); font-weight: 500; }
   a:hover { color: var(--accent); }
 }
 
@@ -241,8 +241,6 @@ h1 {
   white-space: nowrap;
   svg { width: 0.7em; height: 0.7em; fill: currentColor; stroke: currentColor; }
 }
-.ex-char { margin-left: var(--space-1); color: var(--muted); font-size: var(--text-xs); letter-spacing: 0.02em; }
-.s-DOWN .ex-char { color: var(--down); }
 .ex-foot {
   display: flex;
   justify-content: space-between;
@@ -308,7 +306,7 @@ h1 {
   font-size: var(--text-sm);
   app-logo { color: var(--ink); font-size: 0.95rem; }
   nav { display: flex; gap: var(--space-5); margin-left: auto; }
-  a { color: var(--ink-soft); text-decoration: none; }
+  a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-soft); text-decoration: none; }
   a:hover { color: var(--accent); }
 }
 
@@ -328,6 +326,6 @@ h1 {
 }
 
 @media (max-width: 480px) {
-  .top-links a:first-child { display: none; }
+  .top-links .long { display: none; }
   .start { grid-template-columns: minmax(0, 1fr); }
 }

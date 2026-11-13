@@ -29,18 +29,13 @@
         </h2>
         <p class="outage-fact">
           @if (o.sinceLabel) { Since {{ o.sinceLabel }}. }
-          @if (o.cause) { Last error: <strong>{{ o.cause }}</strong>. }
+          @if (o.cause; as cause) { {{ cause.text }}. }
         </p>
-        @if (o.channelsLoaded) {
-          @if (o.channels.length === 0) {
-            <p class="outage-fact">No alert channels, so nobody was notified. <a routerLink="/alerts">Add an alert channel</a></p>
-          } @else {
-            <ul class="outage-channels">
-              @for (c of o.channels; track c.id) {
-                <li [class]="c.state"><span class="who">{{ c.who }}</span> {{ c.text }}</li>
-              }
-            </ul>
-          }
+        @if (o.cause?.raw; as raw) {
+          <details class="raw">
+            <summary>Technical detail</summary>
+            <code>{{ raw }}</code>
+          </details>
         }
       </div>
       <div class="outage-actions">
@@ -48,6 +43,21 @@
         <button class="button on-alarm" type="button" (click)="togglePause(m)" [disabled]="busy()">Pause checks</button>
       </div>
     </section>
+
+    @if (o.channelsLoaded) {
+      <section class="told" aria-labelledby="told-title">
+        <h2 id="told-title">Alerts during this outage</h2>
+        @if (o.channels.length === 0) {
+          <p>No alert channels, so nobody was notified. <a routerLink="/alerts">Add an alert channel</a></p>
+        } @else {
+          <ul>
+            @for (c of o.channels; track c.id) {
+              <li [class]="c.state"><span class="who">{{ c.who }}</span> {{ c.text }}</li>
+            }
+          </ul>
+        }
+      </section>
+    }
   }
 
   <section class="panel" aria-labelledby="pulse-title">
@@ -71,8 +81,13 @@
       <div class="fact">
         <dt>Average response</dt>
         <dd>
-          <span class="big">{{ stats()?.average ?? '–' }}<small> ms</small></span>
-          @if (stats()?.fastest != null) { <span class="sub">{{ stats()!.fastest }}–{{ stats()!.slowest }} ms range</span> }
+          @if (stats()?.average != null) {
+            <span class="big">{{ stats()!.average }}<small> ms</small></span>
+            <span class="sub">{{ stats()!.fastest }}–{{ stats()!.slowest }} ms range</span>
+          } @else {
+            <span class="big">–</span>
+            <span class="sub">{{ stats() ? 'no passing checks yet' : 'no checks yet' }}</span>
+          }
         </dd>
       </div>
       <div class="fact">
@@ -138,7 +153,7 @@
           <li [class.open]="!i.resolvedAt">
             <span class="when">{{ startedLabel(i) }}</span>
             <span class="length">{{ i.resolvedAt ? 'Lasted ' + lasted(i) : 'Ongoing for ' + lasted(i) }}</span>
-            <span class="cause">{{ i.cause ?? 'No error message' }}</span>
+            <span class="cause">{{ plainCheck(i.cause)?.text ?? 'No error recorded' }}</span>
           </li>
         }
       </ul>
@@ -165,7 +180,7 @@
                   {{ timeAgo(r.newestAt, now()) }}
                   @if (r.count > 1) { <span class="back-to">back to {{ timeAgo(r.oldestAt, now()) }}</span> }
                 </td>
-                <td><span class="result">{{ r.count > 1 ? r.count + ' passed' : r.result }}</span></td>
+                <td><span class="result">{{ r.count === 1 ? r.result : r.result === 'Failed' ? 'Failed ' + r.count + ' times' : r.count + ' passed' }}</span></td>
                 <td class="num">{{ r.code }}</td>
                 <td class="num">{{ r.response }}</td>
                 <td class="details">{{ r.details }}</td>

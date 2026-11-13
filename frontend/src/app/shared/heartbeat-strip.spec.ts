@@ -49,7 +49,7 @@ describe('HeartbeatStrip', () => {
 
     strip.dispatchEvent(new FocusEvent('focus'));
     await fixture.whenStable();
-    expect(live()).toContain('failed, HTTP 503');
+    expect(live()).toContain('failed, The site is unavailable (HTTP 503)');
 
     strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
     await fixture.whenStable();

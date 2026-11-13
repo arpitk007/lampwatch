@@ -1,7 +1,7 @@
 <header class="top">
   <a class="brand" routerLink="/" aria-label="Lampwatch home"><app-logo /></a>
   <nav class="top-links" aria-label="Site">
-    <a [routerLink]="['/s', demoSlug]">Demo status page</a>
+    <a [routerLink]="['/s', demoSlug]">Demo<span class="long"> status page</span></a>
     @if (github) { <a [href]="github" rel="noopener">GitHub</a> }
     <a routerLink="/signin">Sign in</a>
   </nav>
@@ -119,7 +119,6 @@
                       }
                     </svg>
                     {{ statusWord[m.status] }}
-                    <span class="ex-char">{{ characteristic[m.status] }}</span>
                   </span>
                 </div>
                 @if (m.days.length > 0) { <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" /> }
@@ -166,7 +165,7 @@
   <app-logo />
   <span>Website monitoring with alerts and a public status page.</span>
   <nav aria-label="Footer">
-    <a [routerLink]="['/s', demoSlug]">Demo status page</a>
+    <a [routerLink]="['/s', demoSlug]">Demo<span class="long"> status page</span></a>
     @if (github) { <a [href]="github" rel="noopener">Source</a> }
     <a routerLink="/signin">Sign in</a>
   </nav>

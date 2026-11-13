@@ -27,8 +27,6 @@ export class PublicStatus implements OnInit {
 
   /** Names the affected services, so a visitor learns what is broken without scrolling. */
   protected readonly headline = computed(() => statusHeadline(this.page()));
-  /** The service whose bulletin line is hovered or focused. */
-  protected readonly highlighted = signal<string | null>(null);
 
   protected reading(m: PublicStatusPage['monitors'][number], page: PublicStatusPage): string {
     return serviceReading(m, page);
@@ -37,8 +35,8 @@ export class PublicStatus implements OnInit {
   protected readonly statusWord: Record<string, string> = {
     UP: 'Operational', DEGRADED: 'Slower than usual', DOWN: 'Down', PAUSED: 'Paused', UNKNOWN: 'No data yet',
   };
-  /** The chart light each state shows on Lampwatch's charts, so the page speaks the same language. */
-  protected readonly characteristic: Record<string, string> = { UP: 'Fl G 5s', DEGRADED: 'Fl(2) Y 8s', DOWN: 'Q R', PAUSED: 'Unlit', UNKNOWN: 'Unlit' };
+  /** Times on this page are in the visitor's zone; the daily table says UTC, so these say theirs. */
+  protected readonly zone = localZone();
   protected readonly uptimeLabel = uptimeLabel;
   protected readonly dayLabel = dayLabel;
   protected readonly clockTime = clockTime;
@@ -61,7 +59,7 @@ export class PublicStatus implements OnInit {
       next: (page) => {
         this.page.set(page);
         this.error.set(null);
-        document.title = `${page.title} status`;
+        document.title = /\bstatus$/i.test(page.title.trim()) ? page.title : `${page.title} status`;
       },
       error: (e) => {
         if (e?.status === 404) this.notFound.set(true);
@@ -73,4 +71,10 @@ export class PublicStatus implements OnInit {
   protected generated(p: PublicStatusPage): string {
     return clockTime(new Date(p.generatedAt));
   }
+}
+
+/** "IST", "GMT+5:30": the short name of the visitor's own time zone. */
+function localZone(): string {
+  const part = new Intl.DateTimeFormat([], { timeZoneName: 'short' }).formatToParts(new Date()).find((p) => p.type === 'timeZoneName');
+  return part?.value ?? 'local time';
 }
