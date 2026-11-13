@@ -12,11 +12,12 @@ import { ResponseChart } from '../../shared/response-chart';
 import { plainAlertError, plainCheckError } from '../../shared/plain-error';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
+import { NotFound } from '../not-found/not-found';
 import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
 
 @Component({
   selector: 'app-monitor-detail',
-  imports: [RouterLink, HeartbeatStrip, StatusBadge, ResponseChart],
+  imports: [RouterLink, HeartbeatStrip, StatusBadge, ResponseChart, NotFound],
   templateUrl: './monitor-detail.html',
   styleUrl: './monitor-detail.scss',
 })
@@ -39,6 +40,7 @@ export class MonitorDetail implements OnInit {
   protected readonly range = signal<24 | 168>(24);
   protected readonly hourly = signal<HourPoint[]>([]);
   protected readonly error = signal<string | null>(null);
+  protected readonly missing = signal(false);
   protected readonly busy = signal(false);
   protected readonly updatedAt = signal<Date | null>(null);
   protected readonly channels = signal<Channel[] | null>(null);
@@ -178,7 +180,10 @@ export class MonitorDetail implements OnInit {
         this.error.set(null);
         this.updatedAt.set(new Date());
       },
-      error: (e) => this.error.set(problemOf(e).detail ?? 'Couldn’t load this monitor.'),
+      error: (e) => {
+        if (e?.status === 404) this.missing.set(true);
+        else this.error.set(problemOf(e).detail ?? 'Couldn’t load this monitor.');
+      },
     });
   }
 }

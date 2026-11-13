@@ -1,4 +1,11 @@
 <a class="skip" href="#main">Skip to content</a>
+@if (server.unreachable()) {
+  <div class="offline" role="alert">
+    <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 L11 10.5 L1 10.5 Z" /></svg>
+    <p>Can’t reach Lampwatch’s server. Anything on screen may be out of date; pages keep retrying on their own.</p>
+    <button class="button" type="button" (click)="retry()">Retry now</button>
+  </div>
+}
 @if (showShell()) {
   <div class="shell">
     <aside class="rail-col"><div class="rail">

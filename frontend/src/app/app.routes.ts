@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guest, signedIn, signedOut } from './auth/auth';
+import { guest, knowUser, signedIn, signedOut } from './auth/auth';
 
 const authPage = () => import('./pages/auth/auth-page').then((m) => m.AuthPage);
 
@@ -26,5 +26,5 @@ export const routes: Routes = [
       { path: 'monitors/:id', loadComponent: () => import('./pages/monitor-detail/monitor-detail').then((m) => m.MonitorDetail), title: 'Monitor' },
     ],
   },
-  { path: '**', redirectTo: '' },
+  { path: '**', canActivate: [knowUser], loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFound), title: 'Not found' },
 ];

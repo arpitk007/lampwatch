@@ -68,6 +68,12 @@ export const signedIn: CanActivateFn = async (_route, state) => {
 /** Matches only for visitors who aren't signed in, so `/` can be the homepage for them and the monitor list for users. */
 export const guest: CanMatchFn = async () => !(await inject(Auth).ensureLoaded());
 
+/** Pages open to everyone that still look different when signed in (the not-found page). */
+export const knowUser: CanActivateFn = async () => {
+  await inject(Auth).ensureLoaded();
+  return true;
+};
+
 /** Sign-in and sign-up pages. Signed-in users go straight to their monitors. */
 export const signedOut: CanActivateFn = async () => {
   const router = inject(Router);

@@ -139,3 +139,26 @@
   .avatar, .email { display: none; }
   .content { padding: var(--space-5) var(--space-4) var(--space-12); }
 }
+
+/* The server can't be reached: one ruled line across the top of every page, said once rather than per panel. */
+.offline {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) clamp(1rem, 3vw, 2rem);
+  background: var(--surface);
+  border-top: 3px solid var(--down);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: var(--text-md);
+
+  svg { flex: none; width: 0.9rem; height: 0.9rem; fill: var(--down); }
+  p { margin: 0; flex: 1; }
+  .button { flex: none; }
+}
+@media (max-width: 600px) {
+  .offline { flex-wrap: wrap; p { flex-basis: calc(100% - 2rem); } }
+}

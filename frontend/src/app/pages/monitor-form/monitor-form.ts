@@ -3,10 +3,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CheckType, MonitorApi, MonitorInput, problemOf } from '../../api/monitor-api';
+import { NotFound } from '../not-found/not-found';
 
 @Component({
   selector: 'app-monitor-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, NotFound],
   templateUrl: './monitor-form.html',
   styleUrl: './monitor-form.scss',
 })
@@ -43,6 +44,7 @@ export class MonitorForm implements OnInit {
   protected readonly needsKeyword = computed(() => this.checkType() === 'KEYWORD');
   protected readonly editing = computed(() => this.id() !== undefined);
 
+  protected readonly missing = signal(false);
   protected readonly saving = signal(false);
   protected readonly formError = signal<string | null>(null);
   protected readonly serverErrors = signal<Record<string, string>>({});
@@ -60,7 +62,10 @@ export class MonitorForm implements OnInit {
             intervalSeconds: m.intervalSeconds,
             timeoutMs: m.timeoutMs,
           }),
-        error: (e) => this.formError.set(problemOf(e).detail ?? 'Couldn’t load this monitor.'),
+        error: (e) => {
+          if (e?.status === 404) this.missing.set(true);
+          else this.formError.set(problemOf(e).detail ?? 'Couldn’t load this monitor.');
+        },
       });
     }
   }

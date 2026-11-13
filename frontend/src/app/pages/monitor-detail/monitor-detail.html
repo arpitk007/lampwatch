@@ -1,3 +1,7 @@
+@if (missing()) {
+  <a class="back" routerLink="/">Monitors</a>
+  <app-not-found [embedded]="true" heading="No monitor here" body="It may have been deleted, or the link has a typo. Your other monitors are unaffected." />
+} @else {
 <a class="back" routerLink="/">Monitors</a>
 
 @if (error(); as message) {
@@ -209,5 +213,23 @@
     <button class="button danger" type="button" (click)="remove(m)" [disabled]="busy()">Delete monitor</button>
   </section>
 } @else if (!error()) {
-  <p class="loading" role="status">Reading this monitor…</p>
+  <p class="visually-hidden" role="status">Reading this monitor…</p>
+  <div class="skeleton" aria-hidden="true">
+    <div class="page-head head">
+      <div class="title"><span class="skel title-skel"></span><span class="skel" style="width: 16rem; margin-top: var(--space-2)"></span></div>
+    </div>
+    <section class="panel">
+      <div class="facts">
+        @for (f of ['Status', 'Passed', 'Average response', 'Checked']; track f) {
+          <div class="fact"><span class="skel-dt">{{ f }}</span><span class="skel line-lg figure-skel"></span><span class="skel" style="width: 70%"></span></div>
+        }
+      </div>
+      <div class="strip"><span class="skel strip-skel"></span></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h2>Response time</h2></div>
+      <div class="panel-body"><span class="skel block chart-skel"></span></div>
+    </section>
+  </div>
+}
 }

@@ -97,5 +97,23 @@
     </section>
   }
 } @else if (!error()) {
-  <p class="loading" role="status">Reading your monitors…</p>
+  <p class="visually-hidden" role="status">Reading your monitors…</p>
+  <div class="skeleton" aria-hidden="true">
+    <span class="skel block band-skel"></span>
+    <section class="panel">
+      <div class="cols"><span>Monitor</span><span>Status</span><span>Last 30 checks</span><span class="right">Response</span></div>
+      <ul class="rows">
+        @for (w of [62, 48, 70]; track w) {
+          <li>
+            <div class="row">
+              <span class="who"><span class="skel line-lg" [style.width.%]="w"></span><span class="skel" [style.width.%]="w + 15" style="margin-top: 6px"></span></span>
+              <span class="state"><span class="skel" style="width: 4rem"></span></span>
+              <span class="skel beats-skel"></span>
+              <span class="numbers"><span class="skel line-lg" style="width: 4.5rem"></span></span>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
 }

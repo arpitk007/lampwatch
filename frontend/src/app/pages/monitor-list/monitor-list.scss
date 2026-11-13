@@ -74,6 +74,11 @@
 }
 
 .who { display: grid; min-width: 0; }
+
+/* Loading: the same grid as the real rows, in sunk blocks. */
+.band-skel { height: 5.25rem; margin-bottom: var(--space-10); }
+.beats-skel { height: 24px; }
+.skeleton .cols { color: var(--muted); }
 .name { font-size: 1.25rem; line-height: 1.3; }
 .url, .when, .since { font-size: var(--text-sm); }
 .url { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

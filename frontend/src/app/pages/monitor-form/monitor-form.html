@@ -1,3 +1,7 @@
+@if (missing()) {
+  <a class="back" routerLink="/">Monitors</a>
+  <app-not-found [embedded]="true" heading="No monitor here" body="It may have been deleted, or the link has a typo. Your other monitors are unaffected." />
+} @else {
 <a class="back" [routerLink]="editing() ? ['/monitors', id()] : ['/']">{{ editing() ? 'Monitor' : 'Monitors' }}</a>
 <header class="page-head">
   <div>
@@ -78,3 +82,4 @@
     </button>
   </div>
 </form>
+}

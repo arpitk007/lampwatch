@@ -5,6 +5,7 @@ import { filter, map } from 'rxjs';
 import { Auth } from './auth/auth';
 import { AlertHealth } from './shared/alert-health';
 import { ConfirmDialog } from './shared/confirm';
+import { ServerHealth } from './shared/server-health';
 import { Logo } from './shared/logo';
 
 @Component({
@@ -17,6 +18,7 @@ export class App {
   protected readonly auth = inject(Auth);
   private readonly router = inject(Router);
   protected readonly alertHealth = inject(AlertHealth);
+  protected readonly server = inject(ServerHealth);
 
   private readonly url = toSignal(
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map((e) => e.urlAfterRedirects)),
@@ -42,6 +44,11 @@ export class App {
       this.url();
       if (this.showShell()) untracked(() => this.alertHealth.refresh());
     });
+  }
+
+  /** A full reload: the simplest way to re-run every request the current page makes. */
+  protected retry(): void {
+    location.reload();
   }
 
   protected async signOut(): Promise<void> {

@@ -336,6 +336,21 @@ input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); width
 /* No single word stranded on a paragraph's last line. */
 p { text-wrap: pretty; }
 
+/* Skeletons: the page's real layout in Water Sunk blocks, so nothing jumps when data arrives.
+   They pulse gently and hold still under reduced motion; the words live in a visually hidden status line. */
+.skel {
+  display: block;
+  height: 0.875rem;
+  border-radius: 4px;
+  background: var(--surface-sunk);
+  animation: skel-pulse 1.4s ease-in-out infinite;
+
+  &.line-lg { height: 1.25rem; }
+  &.block { border-radius: var(--radius); }
+}
+@keyframes skel-pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+
 /* Touch screens get 44px targets; a mouse keeps the denser desktop sizes. */
 @media (pointer: coarse), (max-width: 860px) {
   .button, .back { min-height: 44px; }
