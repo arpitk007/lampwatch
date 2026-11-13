@@ -4,7 +4,7 @@ import { problemOf } from '../../api/monitor-api';
 import { PublicStatusPage, StatusPageApi } from '../../api/status-page-api';
 import { poll } from '../../shared/polling';
 import { Logo } from '../../shared/logo';
-import { ChartLight, LIGHT_FOR_STATUS, SeaChart } from '../../shared/sea-chart';
+import { SeaChart } from '../../shared/sea-chart';
 import { serviceReading, statusHeadline } from '../../shared/status-headline';
 import { clockTime, durationLabel } from '../../shared/time';
 import { dayLabel, UptimeBars, uptimeLabel } from '../../shared/uptime-bars';
@@ -27,11 +27,7 @@ export class PublicStatus implements OnInit {
 
   /** Names the affected services, so a visitor learns what is broken without scrolling. */
   protected readonly headline = computed(() => statusHeadline(this.page()));
-  protected readonly lights = computed<ChartLight[]>(() =>
-    (this.page()?.monitors ?? []).map((m) => ({ name: m.name, state: LIGHT_FOR_STATUS[m.status] })),
-  );
-  protected readonly readAt = computed(() => (this.page() ? new Date(this.page()!.generatedAt) : null));
-  /** The service whose bulletin line or light is hovered, highlighted in both. */
+  /** The service whose bulletin line is hovered or focused. */
   protected readonly highlighted = signal<string | null>(null);
 
   protected reading(m: PublicStatusPage['monitors'][number], page: PublicStatusPage): string {

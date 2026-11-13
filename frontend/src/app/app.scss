@@ -15,7 +15,7 @@
   min-height: 100vh;
 }
 
-.rail-col { background: var(--rail-bg); }
+.rail-col { background: var(--rail-bg); border-right: 1px solid var(--line); }
 
 .rail {
   position: sticky;
@@ -35,7 +35,7 @@
   gap: var(--space-2);
   padding: 0 var(--space-3);
   min-height: 40px;
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
   color: var(--rail-ink-strong);
   text-decoration: none;
 }
@@ -58,7 +58,8 @@
     white-space: nowrap;
   }
   a:hover { background: var(--rail-hover); color: var(--rail-ink-strong); }
-  a.active { background: var(--rail-hover); color: var(--rail-ink-strong); }
+  a.active { background: var(--rail-hover); color: var(--rail-ink-strong); font-weight: 600; }
+  a.active svg { color: var(--accent); }
   svg { width: 1.125rem; height: 1.125rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 }
 
@@ -79,8 +80,8 @@
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: var(--ink-600);
-  color: var(--rail-ink-strong);
+  background: var(--ink);
+  color: var(--on-ink);
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -102,11 +103,8 @@
   font-size: var(--text-sm);
   color: var(--rail-ink);
   cursor: pointer;
-  &:hover { color: var(--rail-ink-strong); text-decoration: underline; }
+  &:hover { color: var(--accent); text-decoration: underline; }
 }
-
-/* Magenta focus rings are too dark on navy; the rail uses white, which clears 3:1 against it. */
-.rail :focus-visible { outline-color: var(--rail-ink-strong); }
 
 .content {
   width: 100%;
@@ -115,6 +113,7 @@
 }
 
 @media (max-width: 860px) {
+  .rail-col { border-right: 0; border-bottom: 1px solid var(--line); }
   .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
   .rail {
     position: static;

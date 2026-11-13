@@ -110,7 +110,7 @@
       <details>
         <summary>Show as table</summary>
         <div class="table-wrap">
-          <table>
+          <table class="ruled">
             <thead><tr><th scope="col">Hour</th><th scope="col" class="num">Average</th><th scope="col" class="num">Checks</th><th scope="col" class="num">Failed</th></tr></thead>
             <tbody>
               @for (p of hourly(); track p.hour) {
@@ -154,7 +154,7 @@
       <p class="panel-body muted">No checks yet. The first one runs within a few seconds of adding or resuming a monitor.</p>
     } @else {
       <div class="table-wrap">
-        <table class="history">
+        <table class="ruled history">
           <thead>
             <tr><th scope="col">Time</th><th scope="col">Result</th><th scope="col" class="num">HTTP</th><th scope="col" class="num">Response</th><th scope="col">Details</th></tr>
           </thead>

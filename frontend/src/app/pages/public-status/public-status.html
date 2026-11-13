@@ -45,12 +45,6 @@
         }
       </div>
 
-      @if (p.monitors.length > 0) {
-        <div class="chart-wrap">
-          <app-sea-chart [lights]="lights()" [active]="highlighted()" (hover)="highlighted.set($event)"
-                         [title]="p.title" [readAt]="readAt()" />
-        </div>
-      }
     </section>
 
     @if (p.monitors.length > 0) {

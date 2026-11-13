@@ -1,4 +1,4 @@
-/* The status page speaks the homepage's language: a masthead, a bulletin read beside the chart, and ruled
+/* The status page speaks the homepage's language: a masthead, a headline beside its bulletin, and ruled
    sheets below. It is a page people read under stress, so the answer (the headline) always comes first. */
 :host { display: block; min-height: 100vh; background: var(--paper); }
 
@@ -17,8 +17,7 @@
 .updated { color: var(--muted); font-size: var(--text-sm); }
 
 .hero {
-  display: grid;
-  grid-template-columns: minmax(20rem, 1fr) minmax(0, 1.5fr);
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
   /* The status colour runs the full width along the top of the hero: the one loud element on the page. */
   border-top: 5px solid var(--up);
@@ -26,14 +25,16 @@
   &.down { border-top-color: var(--down); }
 }
 
+/* Headline left, bulletin right, on the same 64rem measure as the sheets below. */
 .forecast {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-6);
-  padding: var(--space-12) var(--space-8) var(--space-10) clamp(1.25rem, 4vw, 4rem);
-  background: var(--surface);
-  border-right: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: start;
+  gap: var(--space-6) clamp(2rem, 5vw, 4rem);
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-12) clamp(1.25rem, 4vw, 2rem) var(--space-12);
+  > .notice, > .muted { grid-column: 1 / -1; }
 }
 
 .headline {
@@ -74,12 +75,6 @@
   li:focus-visible { box-shadow: 0 0 0 2px var(--focus); }
   .area-name { font-size: 1.125rem; color: var(--ink); }
   li.s-DOWN, li.s-DOWN .area-name { color: var(--down); }
-}
-
-.chart-wrap {
-  position: relative;
-  min-height: 26rem;
-  app-sea-chart { position: absolute; inset: 0; }
 }
 
 /* Ruled sheets: one bordered sheet per block, rows split by hairlines, never cards inside cards. */
@@ -224,9 +219,7 @@ details th { font-weight: 500; color: var(--muted); }
 }
 
 @media (max-width: 900px) {
-  .hero { grid-template-columns: minmax(0, 1fr); }
-  .forecast { padding: var(--space-8) var(--space-4); border-right: 0; border-bottom: 1px solid var(--line); }
-  .chart-wrap { min-height: 24rem; }
+  .forecast { grid-template-columns: minmax(0, 1fr); padding: var(--space-8) var(--space-4); }
   .top { flex-direction: column; gap: var(--space-1); padding: var(--space-4); }
   .notes thead { display: none; }
   .notes tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }

@@ -16,8 +16,9 @@
 }
 
 @if (monitors(); as list) {
-  <form class="panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <form class="panel steps-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
     <div class="section">
+    <h2 class="step-head">Name the page</h2>
     <div class="field">
       <label for="title">Title</label>
       <input id="title" formControlName="title" placeholder="Acme status" autocomplete="off" />
@@ -37,7 +38,7 @@
 
     <div class="section">
     <fieldset class="field">
-      <legend>Services to show</legend>
+      <legend class="step-head">Services to show</legend>
       @if (list.length === 0) {
         <p class="muted">Add a monitor first; it can then appear here.</p>
       }

@@ -3,14 +3,17 @@
 .section {
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-6);
+  padding: var(--space-6) 0 var(--space-8);
   & + .section { border-top: 1px solid var(--line); }
+  /* Fields sit under the step's words, not under its numeral. */
+  > :not(.step-head):not(fieldset), fieldset > :not(legend) { margin-left: calc(1.25rem + var(--space-3)); }
 }
 
 .field { display: grid; gap: 0.35rem; margin: 0; padding: 0; border: 0; min-width: 0; }
 
 label, legend { font-size: var(--text-md); }
-legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
+legend { padding: 0; margin-bottom: var(--space-4); }
+legend.step-head { font-size: 1.375rem; }
 
 /* Each option is a selectable tile; the checked one takes the accent edge. */
 .choice {
@@ -20,6 +23,7 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
+  background: var(--surface);
   font-weight: 500;
   cursor: pointer;
   & + & { margin-top: var(--space-2); }
@@ -40,13 +44,11 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
   display: flex;
   justify-content: end;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-6);
-  border-top: 1px solid var(--line);
-  background: var(--paper);
-  border-radius: 0 0 var(--radius) var(--radius);
+  padding: var(--space-5) 0 0;
+  border-top: 1px solid var(--ink);
 }
 
 @media (max-width: 520px) {
   .pair { grid-template-columns: 1fr; }
-  .section { padding: var(--space-4); }
+  .section > :not(.step-head):not(fieldset), .section fieldset > :not(legend) { margin-left: 0; }
 }

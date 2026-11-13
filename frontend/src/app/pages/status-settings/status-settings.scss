@@ -1,16 +1,14 @@
 :host { display: block; max-width: 44rem; }
 .muted { color: var(--muted); margin: 0; }
 
+/* Published state reads as a bulletin line: a green light, then where the page lives. */
 .live {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin: 0 0 var(--space-5);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--up) 30%, transparent);
-  border-radius: var(--radius-sm);
-  background: var(--up-soft);
-  font-size: var(--text-md);
+  margin: calc(-1 * var(--space-4)) 0 var(--space-8);
+  color: var(--ink-soft);
+  font-size: var(--text-base);
   overflow-wrap: anywhere;
 }
 .live-dot { flex: none; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 25%, transparent); }
@@ -18,12 +16,15 @@
 .section {
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-6);
+  padding: var(--space-6) 0 var(--space-8);
   & + .section { border-top: 1px solid var(--line); }
+  /* Fields sit under the step's words, not under its numeral. */
+  > :not(.step-head):not(fieldset), fieldset > :not(legend) { margin-left: calc(1.25rem + var(--space-3)); }
 }
 .field { display: grid; gap: 0.35rem; border: 0; margin: 0; padding: 0; min-width: 0; }
 label, legend { font-size: var(--text-md); }
-legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
+legend { padding: 0; margin-bottom: var(--space-4); }
+legend.step-head { font-size: 1.375rem; }
 
 .slug {
   display: flex;
@@ -46,9 +47,10 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
   min-height: 44px;
   padding: 0 var(--space-3);
   border: 1px solid var(--line);
+  background: var(--surface);
   font-weight: 400;
   cursor: pointer;
-  &:hover { background: var(--paper); }
+  &:hover { background: var(--water-100); }
   & + & { border-top: 0; margin-top: -0.35rem; }
   .choice-name { flex: 1; }
   .choice-state { font-size: var(--text-sm); font-weight: 500; color: var(--down); }
@@ -60,10 +62,8 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-6);
-  border-top: 1px solid var(--line);
-  background: var(--paper);
-  border-radius: 0 0 var(--radius) var(--radius);
+  padding: var(--space-5) 0 0;
+  border-top: 1px solid var(--ink);
 
   .button.primary { margin-left: auto; }
   p { margin: 0; }
@@ -79,25 +79,11 @@ legend { padding: 0; margin-bottom: var(--space-2); font-weight: 500; }
   font-size: var(--text-md);
 }
 
-.panel.danger-zone {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-6);
-  margin-top: var(--space-8);
-  padding: var(--space-5);
-  border-color: var(--down-soft);
-
-  h2 { margin: 0; font-size: var(--text-base); }
-  p { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--text-md); overflow-wrap: anywhere; }
-  @media (max-width: 640px) { flex-direction: column; align-items: stretch; }
-}
-
 .error { margin: 0; color: var(--down); font-size: var(--text-sm); font-weight: 500; }
 .ok { color: var(--up); font-weight: 500; font-size: var(--text-md); }
 
 @media (max-width: 520px) {
   .slug .prefix { display: none; }
-  .section { padding: var(--space-4); }
+  .section > :not(.step-head):not(fieldset), .section fieldset > :not(legend) { margin-left: 0; }
   .foot { flex-wrap: wrap; }
 }

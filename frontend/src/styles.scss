@@ -80,11 +80,11 @@
   --focus: var(--magenta-600);
 
   /* Component */
-  --rail-bg: var(--ink-900);
-  --rail-ink: var(--ink-300);
-  --rail-ink-strong: var(--white);
-  --rail-hover: var(--ink-800);
-  --rail-line: var(--ink-800);
+  --rail-bg: var(--surface);
+  --rail-ink: var(--ink-soft);
+  --rail-ink-strong: var(--ink);
+  --rail-hover: var(--paper);
+  --rail-line: var(--line);
   --button-bg: var(--surface);
   --button-hover-bg: var(--surface-sunk);
   --button-border: var(--border-strong);
@@ -136,41 +136,88 @@ input, textarea { caret-color: var(--accent); }
   outline-offset: 2px;
 }
 
-/* Page header: title (+ one line of context) on the left, actions on the right. */
+/* Page header: title (+ one line of context) on the left, actions on the right. Titles are set at the
+   homepage's section scale, in the chart's lettering. */
 .page-head {
   display: flex;
-  align-items: center;
+  align-items: end;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  gap: var(--space-4) var(--space-8);
+  margin-bottom: var(--space-8);
 
-  h1 { margin: 0; }
-  .lede { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--text-md); max-width: 60ch; }
+  h1 { margin: 0; font-size: clamp(2rem, 2.8vw, 2.625rem); line-height: 1.1; letter-spacing: -0.02em; text-wrap: balance; }
+  .lede { margin: var(--space-2) 0 0; color: var(--ink-soft); font-size: var(--text-base); line-height: 1.6; max-width: 58ch; }
   .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
   @media (max-width: 640px) { flex-direction: column; align-items: stretch; }
 }
 
-/* The one container: a bordered sheet of content. Sections inside are split by rules, not nested cards. */
+/* The one container: a ruled sheet, opened by a 2px navy rule like the homepage's bulletin and notes table.
+   No box, no shadow; sections inside are split by hairlines, never nested cards. */
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-top: 2px solid var(--ink);
 
-  & + .panel { margin-top: var(--space-5); }
+  & + .panel { margin-top: var(--space-12); }
 }
 .panel-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-4) 0 var(--space-3);
+  border-bottom: 1px solid var(--ink);
 
-  h2 { margin: 0; font-size: var(--text-base); }
+  h2 { margin: 0; font-family: var(--font-chart); font-weight: 400; font-size: 1.5rem; line-height: 1.2; letter-spacing: -0.01em; }
   .meta { color: var(--muted); font-size: var(--text-sm); }
 }
-.panel-body { padding: var(--space-5); }
+.panel-body { padding: var(--space-5) 0; }
+
+/* Numbered steps, as on the homepage: a magenta italic Caslon numeral beside each step's heading. */
+.steps-form { counter-reset: step; }
+.step-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+  font-family: var(--font-chart);
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  counter-increment: step;
+
+  &::before { content: counter(step); min-width: 1.25rem; font-style: italic; font-size: 1.75rem; line-height: 1; color: var(--accent); }
+}
+
+/* Destructive actions sit apart, under a red rule, with their consequence spelled out. */
+.panel.danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-top: var(--space-16);
+  padding: var(--space-5) 0 0;
+  border-top-color: var(--down);
+
+  h2 { margin: 0; font-family: var(--font-chart); font-weight: 400; font-size: 1.375rem; }
+  p { margin: var(--space-1) 0 0; color: var(--ink-soft); font-size: var(--text-md); max-width: 60ch; overflow-wrap: anywhere; }
+  @media (max-width: 640px) { flex-direction: column; align-items: stretch; }
+}
+
+/* Tables follow the homepage's notes table: navy header rule, hairline rows, no fills. */
+.ruled {
+  width: 100%;
+  border-collapse: collapse;
+  th {
+    padding: var(--space-3) var(--space-4) var(--space-3) 0;
+    text-align: left;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  td { padding: var(--space-3) var(--space-4) var(--space-3) 0; border-bottom: 1px solid var(--line); }
+  th:last-child, td:last-child { padding-right: 0; }
+}
 
 .back {
   display: inline-flex;
