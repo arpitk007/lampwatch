@@ -18,8 +18,6 @@ import { Component, input } from '@angular/core';
     .mark { width: 1.5em; height: 1.5em; flex: none; }
     .flare { fill: var(--accent); }
     .dot { fill: var(--ink); }
-    :host(.on-dark) .flare { fill: #e0418f; }
-    :host(.on-dark) .dot { fill: var(--on-ink); }
     .word { font-family: var(--font-chart); font-size: 1.25em; letter-spacing: -0.01em; }
   `,
 })

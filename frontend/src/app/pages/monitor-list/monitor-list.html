@@ -1,13 +1,17 @@
 <header class="page-head">
   <div>
     <h1>Monitors</h1>
-    @if (updatedAt(); as at) {
+    @if (monitors()?.length === 0) {
+      <p class="lede">Three steps from nothing watched to a status page your users can check.</p>
+    } @else if (updatedAt(); as at) {
       <p class="lede">Refreshes every 15 seconds. Last update {{ clockTime(at) }}.</p>
     }
   </div>
-  <div class="actions">
-    <a class="button primary" routerLink="/monitors/new">Add monitor</a>
-  </div>
+  @if (monitors()?.length !== 0) {
+    <div class="actions">
+      <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+    </div>
+  }
 </header>
 
 @if (error(); as message) {
@@ -16,11 +20,25 @@
 
 @if (monitors(); as list) {
   @if (list.length === 0) {
-    <section class="panel empty">
-      <app-sea-chart class="empty-chart" [lights]="[]" title="Your chart" subtitle="Each site you add becomes a light" />
-      <h2>Watch your first site</h2>
-      <p>Paste a URL and we check it within a few seconds, then on the schedule you pick. You get an alert the moment it stops answering.</p>
-      <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+    <section class="panel first-run" aria-labelledby="first-title">
+      <h2 id="first-title" class="visually-hidden">Getting started</h2>
+      <ol class="first-steps">
+        <li>
+          <h3>Watch your first site</h3>
+          <p>Paste a URL. The first check runs within a few seconds, then on the schedule you pick.</p>
+          <a class="button primary" routerLink="/monitors/new">Add monitor</a>
+        </li>
+        <li>
+          <h3>Choose who hears about it</h3>
+          <p>Your sign-in email already gets alerts. Add a team inbox or a Telegram chat if others should too.</p>
+          <a class="button" routerLink="/alerts">Alert settings</a>
+        </li>
+        <li>
+          <h3>Publish a status page</h3>
+          <p>A public page with each service’s status and 30 days of uptime, without your URLs or errors.</p>
+          <a class="button" routerLink="/status-page">Set up the page</a>
+        </li>
+      </ol>
     </section>
   } @else {
     <section class="band" [class]="'band ' + overall().tone" aria-live="polite">
@@ -75,5 +93,5 @@
     </section>
   }
 } @else if (!error()) {
-  <p class="loading">Loading monitors…</p>
+  <p class="loading" role="status">Reading your monitors…</p>
 }

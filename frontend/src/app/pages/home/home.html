@@ -53,7 +53,9 @@
       <app-sea-chart [lights]="lights()" [active]="highlighted()" (hover)="highlighted.set($event)"
                      [title]="isSample() ? 'Sample chart' : (page()?.title ?? '')" [readAt]="readAt()" />
       <p class="chart-key" aria-hidden="true">
-        <span><i class="k up"></i>Up</span><span><i class="k slow"></i>Slow</span><span><i class="k down"></i>Down</span>
+        <span><svg class="k up" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" /></svg>Up</span>
+        <span><svg class="k slow" viewBox="0 0 12 12"><path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /></svg>Slow</span>
+        <span><svg class="k down" viewBox="0 0 12 12"><path d="M6 1 L11 10.5 L1 10.5 Z" /></svg>Down</span>
         @if (downCount() > 0) { <span class="k-note">A quick-flashing red light is a site that’s down now.</span> }
       </p>
     </div>
@@ -89,19 +91,47 @@
           @if (readAt(); as at) { <span class="ex-updated">Updated {{ clock(at) }}</span> }
         </div>
         <div class="ex-head">
-          <p class="ex-headline">{{ pageHeadline().text }}</p>
+          <p class="ex-headline">
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              @switch (pageHeadline().tone) {
+                @case ('up') { <circle cx="6" cy="6" r="5" /> }
+                @case ('slow') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
+                @default { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+              }
+            </svg>
+            {{ pageHeadline().text }}
+          </p>
         </div>
-        <ul class="ex-services">
-          @for (m of p.monitors.slice(0, 4); track m.name) {
-            <li>
-              <div class="ex-row">
-                <span class="area-name">{{ m.name }}</span>
-                <span class="ex-state" [class]="'ex-state s-' + m.status">{{ statusWord[m.status] }}</span>
-              </div>
-              @if (m.days.length > 0) { <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" /> }
-            </li>
-          }
-        </ul>
+        <div class="ex-sheet">
+          <p class="ex-sheet-title">The last 30 days</p>
+          <ul class="ex-services">
+            @for (m of p.monitors.slice(0, 4); track m.name) {
+              <li>
+                <div class="ex-row">
+                  <span class="area-name">{{ m.name }}</span>
+                  <span class="ex-state" [class]="'ex-state s-' + m.status">
+                    <svg viewBox="0 0 12 12" aria-hidden="true">
+                      @switch (m.status) {
+                        @case ('UP') { <circle cx="6" cy="6" r="5" /> }
+                        @case ('DOWN') { <path d="M6 1 L11 10.5 L1 10.5 Z" /> }
+                        @case ('DEGRADED') { <path d="M6 0.8 L11.2 6 L6 11.2 L0.8 6 Z" /> }
+                        @default { <circle cx="6" cy="6" r="4.2" fill="none" stroke-width="1.6" /> }
+                      }
+                    </svg>
+                    {{ statusWord[m.status] }}
+                    <span class="ex-char">{{ characteristic[m.status] }}</span>
+                  </span>
+                </div>
+                @if (m.days.length > 0) { <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" /> }
+                <div class="ex-foot">
+                  <span>30 days ago</span>
+                  <span class="ex-uptime">{{ m.uptime30d === null ? 'No data yet' : uptimeLabel(m.uptime30d) }}</span>
+                  <span>Today</span>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
       </div>
     }
   </section>

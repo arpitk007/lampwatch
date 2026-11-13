@@ -22,6 +22,12 @@ export class App {
   );
 
   /** Public status pages are seen by visitors, so they never show the app chrome, even to a signed-in owner. */
+  /** Splits an address at the @, so the sidebar can show it on two clean lines instead of cutting it. */
+  protected emailParts(email: string): { local: string; domain: string } {
+    const at = email.lastIndexOf('@');
+    return at < 0 ? { local: email, domain: '' } : { local: email.slice(0, at), domain: email.slice(at) };
+  }
+
   protected readonly showShell = computed(() => !!this.auth.user() && !this.url().startsWith('/s/'));
   /** The signed-out homepage and public status pages draw their own header, main and footer landmarks. */
   protected readonly isHome = computed(

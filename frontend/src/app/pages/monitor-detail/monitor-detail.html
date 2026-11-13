@@ -159,22 +159,25 @@
             <tr><th scope="col">Time</th><th scope="col">Result</th><th scope="col" class="num">HTTP</th><th scope="col" class="num">Response</th><th scope="col">Details</th></tr>
           </thead>
           <tbody>
-            @for (c of shownChecks(); track c.checkedAt) {
-              <tr [class.failed]="!c.success">
-                <td>{{ timeAgo(c.checkedAt, now()) }}</td>
-                <td><span class="result">{{ c.success ? 'Passed' : 'Failed' }}</span></td>
-                <td class="num">{{ c.statusCode ?? '–' }}</td>
-                <td class="num">{{ c.responseTimeMs !== null ? c.responseTimeMs + ' ms' : '–' }}</td>
-                <td class="details">{{ c.errorMessage ?? '' }}</td>
+            @for (r of shownRows(); track r.newestAt) {
+              <tr [class.failed]="r.result === 'Failed'" [class.slow]="r.result === 'Slow'">
+                <td>
+                  {{ timeAgo(r.newestAt, now()) }}
+                  @if (r.count > 1) { <span class="back-to">back to {{ timeAgo(r.oldestAt, now()) }}</span> }
+                </td>
+                <td><span class="result">{{ r.count > 1 ? r.count + ' passed' : r.result }}</span></td>
+                <td class="num">{{ r.code }}</td>
+                <td class="num">{{ r.response }}</td>
+                <td class="details">{{ r.details }}</td>
               </tr>
             }
           </tbody>
         </table>
       </div>
-      @if (checks().length > historyLimit()) {
+      @if (historyRows().length > historyLimit()) {
         <div class="more">
-          <button class="button" type="button" (click)="historyLimit.set(historyLimit() + 30)">Show 30 more</button>
-          <span class="meta">Showing {{ shownChecks().length }} of {{ checks().length }}</span>
+          <button class="button" type="button" (click)="historyLimit.set(historyLimit() + 20)">Show more</button>
+          <span class="meta">Showing {{ shownCheckCount() }} of {{ checks().length }} checks</span>
         </div>
       }
     }
@@ -188,5 +191,5 @@
     <button class="button danger" type="button" (click)="remove(m)" [disabled]="busy()">Delete monitor</button>
   </section>
 } @else if (!error()) {
-  <p class="muted">Loading…</p>
+  <p class="loading" role="status">Reading this monitor…</p>
 }

@@ -115,10 +115,11 @@ h1 {
   max-width: calc(100% - 4rem);
 
   span { display: inline-flex; align-items: center; gap: var(--space-1); }
-  .k { width: 0.6rem; height: 0.6rem; border-radius: 50%; display: inline-block; }
-  .k.up { background: var(--up); }
-  .k.slow { background: var(--slow-mark); }
-  .k.down { background: var(--down); }
+  /* The same shape markers as the status badges, so the key never relies on colour alone. */
+  .k { width: 0.7rem; height: 0.7rem; flex: none; }
+  .k.up { fill: var(--up); }
+  .k.slow { fill: var(--slow-mark); }
+  .k.down { fill: var(--down); }
   .k-note { color: var(--muted); }
 }
 
@@ -179,27 +180,48 @@ h1 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
-/* Same structure as the real page: the page's name in a masthead bar, the status sentence below it. */
-.ex-mast, .ex-head { color: var(--on-ink); background: var(--up); }
-.excerpt.down .ex-mast, .excerpt.down .ex-head { background: var(--down); }
-.excerpt.slow .ex-mast, .excerpt.slow .ex-head { background: var(--slow); }
+/* Same structure as the real page: a white masthead with the page's name, the status colour as a rule
+   under it, the headline in Caslon in that colour, then the 30-day sheet on paper. */
 .ex-mast {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-6);
-  border-bottom: 1px solid rgb(255 255 255 / 0.22);
+  border-bottom: 4px solid var(--up);
 }
-.ex-site { font-family: var(--font-chart); font-size: 1.0625rem; }
-.ex-updated { font-size: var(--text-xs); opacity: 0.85; }
-.ex-head { padding: var(--space-5) var(--space-6) var(--space-6); }
-.ex-headline { margin: 0; font-size: clamp(1.25rem, 2vw, 1.625rem); font-weight: 600; line-height: 1.2; }
+.excerpt.down .ex-mast { border-bottom-color: var(--down); }
+.excerpt.slow .ex-mast { border-bottom-color: var(--slow-mark); }
+.ex-site { font-family: var(--font-chart); font-size: 1.125rem; color: var(--ink); }
+.ex-updated { font-size: var(--text-xs); color: var(--muted); }
+.ex-head { padding: var(--space-6) var(--space-6) var(--space-5); border-bottom: 1px solid var(--line); }
+.ex-headline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-chart);
+  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--up);
+  svg { width: 0.5em; height: 0.5em; flex: none; fill: currentColor; }
+}
+.excerpt.down .ex-headline { color: var(--down); }
+.excerpt.slow .ex-headline { color: var(--slow); }
+.ex-sheet { padding: var(--space-5) var(--space-6) var(--space-2); background: var(--paper); }
+.ex-sheet-title {
+  margin: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--ink);
+  font-family: var(--font-chart);
+  font-size: 1.25rem;
+}
 .ex-services {
   list-style: none;
   margin: 0;
-  padding: 0 var(--space-6);
-  li { padding: var(--space-5) 0; }
+  padding: 0;
+  li { padding: var(--space-4) 0; }
   li + li { border-top: 1px solid var(--line); }
 }
 .ex-row {
@@ -210,7 +232,26 @@ h1 {
   margin-bottom: var(--space-3);
   .area-name { font-size: 1.125rem; }
 }
-.ex-state { font-size: var(--text-sm); font-weight: 500; }
+.ex-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  svg { width: 0.7em; height: 0.7em; fill: currentColor; stroke: currentColor; }
+}
+.ex-char { margin-left: var(--space-1); color: var(--muted); font-size: var(--text-xs); letter-spacing: 0.02em; }
+.s-DOWN .ex-char { color: var(--down); }
+.ex-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+.ex-uptime { color: var(--ink); font-weight: 500; }
 .s-UP { color: var(--up); }
 .s-DEGRADED { color: var(--slow); }
 .s-DOWN { color: var(--down); }

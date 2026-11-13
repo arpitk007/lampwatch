@@ -4,14 +4,13 @@ import { forkJoin } from 'rxjs';
 import { CheckResult, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { secondsLabel, StatusRulesStore } from '../../api/status-rules';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
-import { SeaChart } from '../../shared/sea-chart';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
 import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
 
 @Component({
   selector: 'app-monitor-list',
-  imports: [RouterLink, HeartbeatStrip, StatusBadge, SeaChart],
+  imports: [RouterLink, HeartbeatStrip, StatusBadge],
   templateUrl: './monitor-list.html',
   styleUrl: './monitor-list.scss',
 })

@@ -141,6 +141,8 @@ td { white-space: nowrap; }
 .details { white-space: normal; color: var(--muted); min-width: 14rem; }
 .result { font-weight: 500; color: var(--up); }
 .failed td { background: color-mix(in srgb, var(--danger-bg) 70%, transparent); }
+.slow .result { color: var(--slow); }
+.back-to { display: block; color: var(--muted); font-size: var(--text-sm); }
 .failed .result { color: var(--down); }
 
 .more {

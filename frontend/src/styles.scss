@@ -291,6 +291,26 @@ input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); width
   &.quiet:hover { color: var(--ink); background: var(--button-hover-bg); }
 }
 
+/* Loading reads as a light being read: a magenta light flashing once a second beside the words. */
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--muted);
+
+  &::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: light-flash 1s ease-in-out infinite;
+  }
+}
+@keyframes light-flash { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
 .notice {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--down-soft);

@@ -48,10 +48,10 @@ export class Confirm {
       border-radius: var(--radius);
       background: var(--surface);
       color: var(--ink);
-      box-shadow: 0 12px 32px rgb(12 29 46 / 0.18), 0 2px 6px rgb(12 29 46 / 0.08);
+      box-shadow: 0 12px 32px color-mix(in srgb, var(--ink) 18%, transparent), 0 2px 6px color-mix(in srgb, var(--ink) 8%, transparent);
     }
     .body { padding: var(--space-6); }
-    dialog::backdrop { background: rgb(12 29 46 / 0.45); }
+    dialog::backdrop { background: color-mix(in srgb, var(--ink) 45%, transparent); }
     dialog[open] { animation: rise 160ms cubic-bezier(0.16, 1, 0.3, 1); }
     @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
     h2 { margin: 0; font-size: var(--text-lg); }

@@ -6,6 +6,7 @@ import { CheckResult, HourPoint, Incident, Monitor, MonitorApi, problemOf } from
 import { secondsLabel, StatusRulesStore } from '../../api/status-rules';
 import { Confirm } from '../../shared/confirm';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
+import { historyRows } from '../../shared/history-rows';
 import { ResponseChart } from '../../shared/response-chart';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
@@ -75,8 +76,11 @@ export class MonitorDetail implements OnInit {
   });
 
   protected readonly oldestFirst = computed(() => [...this.checks()].reverse());
-  protected readonly historyLimit = signal(15);
-  protected readonly shownChecks = computed(() => this.checks().slice(0, this.historyLimit()));
+  /** History rows: runs of ordinary passes merged, failures and slow checks on their own. */
+  protected readonly historyRows = computed(() => historyRows(this.checks(), this.rules()?.slowAfterMs ?? null));
+  protected readonly historyLimit = signal(12);
+  protected readonly shownRows = computed(() => this.historyRows().slice(0, this.historyLimit()));
+  protected readonly shownCheckCount = computed(() => this.shownRows().reduce((n, r) => n + r.count, 0));
   protected readonly stats = computed(() => {
     const checks = this.checks();
     if (checks.length === 0) return null;

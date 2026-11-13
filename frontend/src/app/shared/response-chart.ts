@@ -11,8 +11,9 @@ const HEIGHT = 180;
 const PAD = { top: 12, right: 12, bottom: 28, left: 56 };
 
 /**
- * Hourly average response time as a single 2px line. Hours without checks break the
- * line rather than being bridged. A crosshair snaps to the nearest hour on hover or
+ * Hourly average response time as a 2px line over a shallow-water fill, with a point on every
+ * hour that has data so a lone hour still shows. Hours without checks break the line rather
+ * than being bridged. A crosshair snaps to the nearest hour on hover or
  * with the arrow keys; hours with failed checks get a red tick under the axis.
  */
 @Component({
@@ -33,8 +34,14 @@ const PAD = { top: 12, right: 12, bottom: 28, left: 56 };
         @for (f of failureTicks(); track f) {
           <rect class="fail" [attr.x]="f - 1.5" [attr.y]="height - pad.bottom + 3" width="3" height="6" rx="1" />
         }
+        @for (d of areas(); track $index) {
+          <path class="area" [attr.d]="d" />
+        }
         @for (d of paths(); track $index) {
           <path class="line" [attr.d]="d" />
+        }
+        @for (p of dots(); track p.x) {
+          <circle class="pt" [attr.cx]="p.x" [attr.cy]="p.y" r="2.5" />
         }
         @if (activeSlot(); as a) {
           <line class="crosshair" [attr.x1]="a.x" [attr.x2]="a.x" [attr.y1]="pad.top" [attr.y2]="height - pad.bottom" />
@@ -42,6 +49,7 @@ const PAD = { top: 12, right: 12, bottom: 28, left: 56 };
         }
       </svg>
       @if (emptyNote(); as note) { <p class="empty">{{ note }}</p> }
+      @if (sparseNote(); as note) { <p class="sparse">{{ note }}</p> }
       @if (activeSlot(); as a) {
         <div class="tip" [style.left.px]="a.tipX">{{ a.label }}</div>
       }
@@ -54,6 +62,9 @@ const PAD = { top: 12, right: 12, bottom: 28, left: 56 };
     svg { display: block; overflow: visible; }
     .grid { stroke: var(--grid); stroke-width: 1; }
     .axis { fill: var(--muted); font-size: 12px; font-family: inherit; }
+    .area { fill: var(--chart-shallow); opacity: 0.7; }
+    .pt { fill: var(--series-1); }
+    .sparse { margin: 0.25rem 0 0; color: var(--muted); font-size: var(--text-xs); }
     .line { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
     .fail { fill: var(--down); }
     .empty {
@@ -156,21 +167,43 @@ export class ResponseChart implements OnDestroy {
     return spaced;
   });
 
-  /** One path per run of consecutive hours with a value, so gaps aren't bridged. */
-  protected readonly paths = computed(() => {
-    const out: string[] = [];
-    let d = '';
+  /** Runs of consecutive hours with a value, as [x, y] points, so gaps aren't bridged. */
+  private readonly runs = computed(() => {
+    const out: [number, number][][] = [];
+    let run: [number, number][] = [];
     this.slots().forEach((s, i) => {
       const ms = s.point?.avgMs;
       if (ms === null || ms === undefined) {
-        if (d) out.push(d);
-        d = '';
+        if (run.length) out.push(run);
+        run = [];
         return;
       }
-      d += `${d ? 'L' : 'M'}${this.x(i).toFixed(1)},${this.y(ms).toFixed(1)}`;
+      run.push([this.x(i), this.y(ms)]);
     });
-    if (d) out.push(d);
+    if (run.length) out.push(run);
     return out;
+  });
+
+  protected readonly paths = computed(() =>
+    this.runs().filter((r) => r.length > 1).map((r) => r.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')),
+  );
+
+  /** Each run filled down to the zero line, so the shape of the data reads even when it is short. */
+  protected readonly areas = computed(() => {
+    const base = (HEIGHT - PAD.bottom).toFixed(1);
+    return this.runs().filter((r) => r.length > 1).map((r) => {
+      const line = r.map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`).join('');
+      return `M${r[0][0].toFixed(1)},${base}${line}L${r[r.length - 1][0].toFixed(1)},${base}Z`;
+    });
+  });
+
+  protected readonly dots = computed(() => this.runs().flat().map(([x, y]) => ({ x, y })));
+
+  /** When only a few hours have data, says so, so a mostly empty axis isn't read as an outage. */
+  protected readonly sparseNote = computed(() => {
+    const withData = this.slots().filter((s) => s.point?.avgMs != null).length;
+    if (withData === 0 || withData >= this.hours() / 4) return null;
+    return `${withData === 1 ? 'Only 1 hour' : `Only ${withData} hours`} of the last ${rangeLabel(this.hours())} ${withData === 1 ? 'has' : 'have'} response times so far.`;
   });
 
   protected readonly failureTicks = computed(() =>

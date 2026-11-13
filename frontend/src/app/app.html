@@ -20,7 +20,7 @@
       @if (auth.user(); as user) {
         <div class="account">
           <span class="avatar" aria-hidden="true">{{ user.email[0] }}</span>
-          <span class="email" [title]="user.email">{{ user.email }}</span>
+          <span class="email" [title]="user.email"><span>{{ emailParts(user.email).local }}</span><span class="domain">{{ emailParts(user.email).domain }}</span></span>
           <button class="signout" type="button" (click)="signOut()">Sign out</button>
         </div>
       }

@@ -9,7 +9,8 @@
   justify-content: space-between;
   align-items: baseline;
   gap: var(--space-4);
-  padding: var(--space-4) clamp(1.25rem, 4vw, 4rem);
+  /* Same left edge as the headline and sheets below, which sit on a centred 64rem measure. */
+  padding: var(--space-4) max(clamp(1.25rem, 4vw, 2rem), calc((100% - 64rem) / 2 + clamp(1.25rem, 4vw, 2rem)));
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
