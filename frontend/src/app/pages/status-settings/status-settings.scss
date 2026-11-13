@@ -79,6 +79,10 @@ legend.step-head { font-size: 1.375rem; }
 .error { margin: 0; color: var(--down); font-size: var(--text-sm); font-weight: 500; }
 .ok { color: var(--up); font-weight: 500; font-size: var(--text-md); }
 
+@media (pointer: coarse), (max-width: 860px) {
+  .live a { display: inline-flex; align-items: center; min-height: 44px; }
+}
+
 @media (max-width: 520px) {
   .slug .prefix { display: none; }
   .section > :not(.step-head):not(fieldset), .section fieldset > :not(legend) { margin-left: 0; }

@@ -333,6 +333,9 @@ input[type='radio'], input[type='checkbox'] { accent-color: var(--accent); width
   white-space: nowrap;
 }
 
+/* No single word stranded on a paragraph's last line. */
+p { text-wrap: pretty; }
+
 /* Touch screens get 44px targets; a mouse keeps the denser desktop sizes. */
 @media (pointer: coarse), (max-width: 860px) {
   .button, .back { min-height: 44px; }

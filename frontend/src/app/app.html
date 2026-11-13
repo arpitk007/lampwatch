@@ -11,6 +11,10 @@
         <a routerLink="/alerts" routerLinkActive="active">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3a5 5 0 0 0-5 5v3l-1.5 3h13L15 11V8a5 5 0 0 0-5-5zM8 16.5a2 2 0 0 0 4 0" /></svg>
           Alerts
+          @if (alertHealth.broken().length > 0) {
+            <svg class="nav-alarm" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 L11 10.5 L1 10.5 Z" /></svg>
+            <span class="visually-hidden">, delivery failing</span>
+          }
         </a>
         <a routerLink="/status-page" routerLinkActive="active">
           <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M3 10h14M10 3c2 2.2 2.8 4.6 2.8 7s-.8 4.8-2.8 7c-2-2.2-2.8-4.6-2.8-7S8 5.2 10 3z" /></svg>

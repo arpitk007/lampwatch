@@ -15,6 +15,15 @@
   &.waiting { background: var(--ink-600); }
 }
 
+/* A caution, not a status: ink text under a red rule, like the status settings one (DESIGN.md, Cautions). */
+.caution {
+  margin: calc(-1 * var(--space-4)) 0 var(--space-8);
+  padding: var(--space-3) 0 0;
+  border-top: 2px solid var(--down);
+  color: var(--ink);
+  font-size: var(--text-md);
+  a { font-weight: 600; }
+}
 .band-mark { width: 1.5rem; height: 1.5rem; fill: currentColor; }
 .band-text p { margin: 0; }
 .headline { font-size: var(--text-xl); font-weight: 600; line-height: 1.25; }

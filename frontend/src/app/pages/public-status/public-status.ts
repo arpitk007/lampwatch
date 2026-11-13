@@ -37,6 +37,22 @@ export class PublicStatus implements OnInit {
   };
   /** Times on this page are in the visitor's zone; the daily table says UTC, so these say theirs. */
   protected readonly zone = localZone();
+  /** The incident list covers 14 days, so only those days can say "no outage". */
+  protected readonly outagesKnownFrom = new Date(Date.now() - 13 * 86_400_000).toISOString().slice(0, 10);
+  /** UTC days on which each service had an outage open, by service name. */
+  protected readonly outageDays = computed(() => {
+    const byName = new Map<string, Set<string>>();
+    for (const i of this.page()?.incidents ?? []) {
+      const days = byName.get(i.monitorName) ?? new Set<string>();
+      const end = i.resolvedAt ? Date.parse(i.resolvedAt) : Date.now();
+      for (let t = Date.parse(i.startedAt); t < end + 86_400_000; t += 86_400_000) {
+        days.add(new Date(Math.min(t, end)).toISOString().slice(0, 10));
+      }
+      byName.set(i.monitorName, days);
+    }
+    return byName;
+  });
+  protected readonly noDays: ReadonlySet<string> = new Set();
   protected readonly uptimeLabel = uptimeLabel;
   protected readonly dayLabel = dayLabel;
   protected readonly clockTime = clockTime;

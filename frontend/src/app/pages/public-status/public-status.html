@@ -75,7 +75,7 @@
                   {{ statusWord[m.status] }}
                 </span>
               </div>
-              <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" />
+              <app-uptime-bars [days]="m.days" [downNow]="m.status === 'DOWN'" [outageDays]="outageDays().get(m.name) ?? noDays" [outagesKnownFrom]="outagesKnownFrom" />
               <div class="service-foot">
                 <span>30 days ago</span>
                 <span class="uptime">{{ m.uptime30d === null ? 'No data yet' : uptimeLabel(m.uptime30d) }}</span>

@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertsApi, Channel, ChannelType } from '../../api/alerts-api';
 import { problemOf } from '../../api/monitor-api';
+import { AlertHealth } from '../../shared/alert-health';
 import { plainAlertError } from '../../shared/plain-error';
 import { Confirm } from '../../shared/confirm';
 import { timeAgo } from '../../shared/time';
@@ -15,6 +16,7 @@ import { timeAgo } from '../../shared/time';
 })
 export class AlertsPage {
   private readonly api = inject(AlertsApi);
+  private readonly alertHealth = inject(AlertHealth);
   private readonly confirm = inject(Confirm);
 
   protected readonly channels = signal<Channel[] | null>(null);
@@ -109,6 +111,7 @@ export class AlertsPage {
     this.api.list().subscribe({
       next: (list) => {
         this.channels.set(list);
+        this.alertHealth.set(list);
         this.error.set(null);
       },
       error: (e) => this.error.set(problemOf(e).detail ?? 'Couldn’t load alert channels.'),

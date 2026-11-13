@@ -61,6 +61,10 @@
       </dl>
     </section>
 
+    @if (alertHealth.summary(); as alarm) {
+      <p class="caution" role="status">{{ alarm }} You won’t hear about outages there until it’s fixed. <a routerLink="/alerts">Fix in Alerts</a></p>
+    }
+
     <section class="panel">
       <div class="cols" aria-hidden="true">
         <span>Monitor</span>

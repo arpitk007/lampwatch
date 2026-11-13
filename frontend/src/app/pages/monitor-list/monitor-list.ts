@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { CheckResult, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { secondsLabel, StatusRulesStore } from '../../api/status-rules';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
+import { AlertHealth } from '../../shared/alert-health';
 import { poll } from '../../shared/polling';
 import { StatusBadge } from '../../shared/status-badge';
 import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/time';
@@ -16,6 +17,7 @@ import { clockTime, durationLabel, intervalLabel, timeAgo } from '../../shared/t
 })
 export class MonitorList {
   private readonly api = inject(MonitorApi);
+  protected readonly alertHealth = inject(AlertHealth);
   private readonly rulesStore = inject(StatusRulesStore);
   protected readonly slowAfterMs = computed(() => this.rulesStore.get()?.slowAfterMs ?? null);
 
@@ -77,6 +79,7 @@ export class MonitorList {
   }
 
   private load(): void {
+    this.alertHealth.refresh();
     forkJoin({ monitors: this.api.list(), heartbeats: this.api.heartbeats(30) }).subscribe({
       next: ({ monitors, heartbeats }) => {
         this.monitors.set([...monitors].sort((a, b) => a.name.localeCompare(b.name)));

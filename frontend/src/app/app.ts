@@ -1,8 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { Auth } from './auth/auth';
+import { AlertHealth } from './shared/alert-health';
 import { ConfirmDialog } from './shared/confirm';
 import { Logo } from './shared/logo';
 
@@ -15,6 +16,7 @@ import { Logo } from './shared/logo';
 export class App {
   protected readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  protected readonly alertHealth = inject(AlertHealth);
 
   private readonly url = toSignal(
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map((e) => e.urlAfterRedirects)),
@@ -33,6 +35,14 @@ export class App {
   protected readonly isHome = computed(
     () => (!this.auth.user() && this.url().split('?')[0] === '/') || this.url().startsWith('/s/'),
   );
+
+  constructor() {
+    // Re-read channel health on every app navigation, so the rail marker follows fixes made elsewhere.
+    effect(() => {
+      this.url();
+      if (this.showShell()) untracked(() => this.alertHealth.refresh());
+    });
+  }
 
   protected async signOut(): Promise<void> {
     await this.auth.signOut();

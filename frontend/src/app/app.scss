@@ -97,6 +97,8 @@
   .domain { color: var(--muted); font-size: var(--text-xs); }
 }
 
+.nav svg.nav-alarm { display: block; width: 0.75rem; height: 0.75rem; margin-left: auto; fill: var(--down); stroke: none; }
+
 .signout {
   justify-self: start;
   padding: 0;

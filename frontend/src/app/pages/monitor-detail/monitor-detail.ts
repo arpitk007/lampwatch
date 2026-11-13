@@ -4,6 +4,7 @@ import { forkJoin, Observable } from 'rxjs';
 import { AlertsApi, Channel } from '../../api/alerts-api';
 import { CheckResult, HourPoint, Incident, Monitor, MonitorApi, problemOf } from '../../api/monitor-api';
 import { secondsLabel, StatusRulesStore } from '../../api/status-rules';
+import { channelName } from '../../shared/alert-health';
 import { Confirm } from '../../shared/confirm';
 import { HeartbeatStrip } from '../../shared/heartbeat-strip';
 import { historyRows } from '../../shared/history-rows';
@@ -56,7 +57,7 @@ export class MonitorDetail implements OnInit {
     const channels = (this.channels() ?? []).map((c) => {
       const d = c.lastDelivery;
       const during = d && sinceMs !== null && Date.parse(d.at) >= sinceMs;
-      const who = c.type === 'TELEGRAM' ? `Telegram chat ${c.target}` : c.target;
+      const who = channelName(c);
       if (!during) return { id: c.id, who, state: 'none', text: 'no alert during this outage' };
       switch (d.status) {
         case 'SENT':
@@ -76,6 +77,8 @@ export class MonitorDetail implements OnInit {
     };
   });
 
+  /** Failed checks in the chart's range: the same failures its red ticks mark. */
+  protected readonly failedCount = computed(() => this.hourly().reduce((n, p) => n + p.failures, 0));
   protected readonly oldestFirst = computed(() => [...this.checks()].reverse());
   /** History rows: runs of ordinary passes merged, failures and slow checks on their own. */
   protected readonly historyRows = computed(() => historyRows(this.checks(), this.rules()?.slowAfterMs ?? null));

@@ -65,6 +65,12 @@ export class UptimeBars {
   readonly days = input.required<DayUptime[]>();
   /** The service is down right now: today's rollup lags, so its bar shows the live outage instead of "no data". */
   readonly downNow = input(false);
+  /**
+   * Days (YYYY-MM-DD, UTC) on which an outage was declared, and the first day that list covers. A day with
+   * failed checks but no outage says so, so a red bar doesn't read as an incident the page never lists.
+   */
+  readonly outageDays = input<ReadonlySet<string> | null>(null);
+  readonly outagesKnownFrom = input<string | null>(null);
   protected readonly active = signal<number | null>(null);
 
   protected readonly view = computed(() => {
@@ -72,9 +78,15 @@ export class UptimeBars {
     return days.map((d, i) =>
       this.downNow() && i === days.length - 1
         ? { date: d.date, tone: 'major' as Tone, label: `${dayLabel(d.date)}: down now` }
-        : { date: d.date, tone: tone(d.uptime), label: `${dayLabel(d.date)}: ${uptimeLabel(d.uptime)}` },
+        : { date: d.date, tone: tone(d.uptime), label: `${dayLabel(d.date)}: ${uptimeLabel(d.uptime)}${this.noOutage(d) ? ', failed checks but no outage' : ''}` },
     );
   });
+
+  private noOutage(d: DayUptime): boolean {
+    const known = this.outagesKnownFrom();
+    const outages = this.outageDays();
+    return d.uptime !== null && d.uptime < 100 && !!outages && !!known && d.date >= known && !outages.has(d.date);
+  }
 
   protected readonly activeDay = computed(() => {
     const i = this.active();
