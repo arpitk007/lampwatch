@@ -1,6 +1,6 @@
-# Uptime Monitor
+# Lampwatch
 
-Checks websites on a schedule, records response times, and serves public status pages.
+An uptime monitor: checks websites on a schedule, records response times, alerts by email or Telegram when a site goes down, and serves public status pages.
 
 ## Run locally
 
